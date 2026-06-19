@@ -1,0 +1,31 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Strong blue gradient (optimized for small sizes) -->
+    <linearGradient id="heartGrad" x1="120" y1="100" x2="390" y2="400" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#38bdf8"></stop>
+      <stop offset="0.5" stop-color="#0ea5e9"></stop>
+      <stop offset="1" stop-color="#1d4ed8"></stop>
+    </linearGradient>
+
+    <!-- Subtle inner highlight -->
+    <linearGradient id="shine" x1="180" y1="140" x2="300" y2="300">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.35"></stop>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"></stop>
+    </linearGradient>
+  </defs>
+
+  <!-- Main heart (clean + bold) -->
+  <path d="M256 420
+       C 140 320, 90 260, 90 190
+       C 90 130, 135 90, 185 90
+       C 215 90, 240 110, 256 135
+       C 272 110, 297 90, 327 90
+       C 377 90, 422 130, 422 190
+       C 422 260, 372 320, 256 420 Z" fill="url(#heartGrad)"></path>
+
+  <!-- Soft highlight (keeps premium feel but doesn't hurt favicon clarity) -->
+  <path d="M256 360
+       C 170 290, 135 245, 135 195
+       C 135 155, 165 125, 200 125
+       C 225 125, 245 140, 256 160" fill="none" stroke="url(#shine)" stroke-width="18" stroke-linecap="round"></path>
+</svg>
