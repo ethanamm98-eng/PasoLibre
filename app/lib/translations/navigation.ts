@@ -1,0 +1,43 @@
+export type Language = "en" | "es";
+
+export const navigationTranslations = {
+  en: {
+    home: "Home",
+    about: "About",
+    initiatives: "Initiatives",
+    resources: "Resources",
+    healthResources: "Health-Care Resources",
+    legalResources: "Legal Resources",
+    genderResources: "Gender-Affirming Resources",
+    contact: "Contact",
+    donate: "Donate",
+    profile: "Profile",
+    dashboard: "Dashboard",
+    calendar: "Calendar",
+    logout: "Logout",
+    signIn: "Sign In",
+    followUs: "Follow us",
+    signedInAs: "Signed in as",
+    loggedIn: "Logged in",
+  },
+
+  es: {
+    home: "Inicio",
+    about: "Sobre Nosotrxs",
+    initiatives: "Iniciativas",
+    resources: "Recursos",
+    healthResources: "Recursos de Salud",
+    legalResources: "Recursos Legales",
+    genderResources: "Recursos de Afirmación de Género",
+    contact: "Contáctanos",
+    donate: "Donar",
+    profile: "Perfil",
+    dashboard: "Panel",
+    calendar: "Calendario",
+    logout: "Cerrar sesión",
+    signIn: "Iniciar sesión",
+    followUs: "Síguenos",
+    signedInAs: "Conectado como",
+    loggedIn: "Conectado",
+  },
+};
