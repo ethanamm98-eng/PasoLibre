@@ -12,8 +12,9 @@ import SocialCommunitySection from "./components/SocialCommunitySection";
 import AnnouncementHeroOverlay from "./components/AnnouncementHeroOverlay";
 import WhatWeDoSection from "./components/HomePageWhatWeDo";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+// const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://wusbcaffjonhexqrabzk.supabase.co";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "sb_publishable_5RQHh-f6_dVKyXUy--23aA_RT6-S74E";
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default async function App() {
