@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 type Recipient = {
   id?: string;
@@ -30,8 +31,18 @@ type Announcement = {
 
 type EmailLanguage = "en" | "es";
 
+const getResend = () => {
+  const apiKey = process.env.RESEND_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("Missing RESEND_API_KEY environment variable.");
+  }
+
+  return new Resend(apiKey);
+};
+
 const escapeHtml = (value: string) =>
-  value
+  String(value || "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
@@ -129,17 +140,7 @@ const getLocalizedAnnouncementField = (
 
 export async function POST(req: Request) {
   try {
-    if (!process.env.RESEND_API_KEY) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Missing RESEND_API_KEY environment variable.",
-          message_en: "Missing RESEND_API_KEY environment variable.",
-          message_es: "Falta la variable de entorno RESEND_API_KEY.",
-        },
-        { status: 500 }
-      );
-    }
+    const resend = getResend();
 
     const body = await req.json();
     const announcement: Announcement = body?.announcement;
@@ -235,7 +236,7 @@ export async function POST(req: Request) {
         const safeName = escapeHtml(fullName);
 
         return resend.emails.send({
-          from: "Paso Libre <team@pasolibre.org>",
+          from: process.env.EMAIL_FROM || "Paso Libre <team@pasolibre.org>",
           to: recipient.email as string,
           subject: safeTitle,
           html: `

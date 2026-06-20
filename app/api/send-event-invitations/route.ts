@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 type EmailLanguage = "en" | "es";
 
 type Recipient = {
@@ -10,6 +8,19 @@ type Recipient = {
   first_name?: string | null;
   last_name?: string | null;
   language_preference?: string | null;
+};
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+const getResend = () => {
+  const apiKey = process.env.RESEND_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("Missing RESEND_API_KEY.");
+  }
+
+  return new Resend(apiKey);
 };
 
 const escapeHtml = (value: string) =>
@@ -220,9 +231,10 @@ const buildAddress = ({
 
   return fullAddress || String(address || location || "").trim();
 };
-
 export async function POST(req: Request) {
   try {
+    const resend = getResend();
+
     const body = await req.json();
 
     const {

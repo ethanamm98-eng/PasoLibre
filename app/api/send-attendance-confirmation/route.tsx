@@ -1,9 +1,20 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 type EmailLanguage = "en" | "es";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+const getResend = () => {
+  const apiKey = process.env.RESEND_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("Missing RESEND_API_KEY.");
+  }
+
+  return new Resend(apiKey);
+};
 
 const escapeHtml = (value: string) =>
   String(value || "")
@@ -81,7 +92,9 @@ const getCopy = (language: EmailLanguage) => {
 };
 
 export async function POST(req: Request) {
+
   try {
+    const resend = getResend();
     const body = await req.json();
 
     // console.log("send-attendance-confirmation request body:", body);

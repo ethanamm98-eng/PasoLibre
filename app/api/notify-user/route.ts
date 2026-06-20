@@ -2,10 +2,21 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+const getResend = () => {
+  const apiKey = process.env.RESEND_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("Missing RESEND_API_KEY.");
+  }
+
+  return new Resend(apiKey);
+};
 
 const escapeHtml = (value: string) =>
-  value
+  String(value || "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
@@ -14,12 +25,16 @@ const escapeHtml = (value: string) =>
 
 export async function POST(req: Request) {
   try {
+    const resend = getResend();
+
     const body = await req.json();
 
     const email = String(body.email || "")
       .trim()
       .toLowerCase();
+
     const firstName = String(body.firstName || "").trim();
+
     const languagePreference = String(body.languagePreference || "en")
       .trim()
       .toLowerCase();
@@ -31,16 +46,16 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!process.env.RESEND_API_KEY) {
-      return NextResponse.json(
-        { success: false, message: "Missing RESEND_API_KEY." },
-        { status: 500 }
-      );
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+    if (!supabaseUrl) {
+      throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL.");
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
     const loginUrl = `${siteUrl}/login`;
-    const logoUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/email-assets/logo-title_nobg.png`;
+    const logoUrl = `${supabaseUrl}/storage/v1/object/public/email-assets/logo-title_nobg.png`;
 
     const isSpanish = languagePreference === "es";
 
@@ -84,6 +99,16 @@ export async function POST(req: Request) {
       footer: isSpanish
         ? "Si tienes alguna pregunta, simplemente responde a este correo electrónico. Estaremos encantados de ayudarte."
         : "If you have any questions, just reply to this email — we’re happy to help.",
+
+      rights: isSpanish ? "Todos los derechos reservados." : "All rights reserved.",
+
+      failedSend: isSpanish
+        ? "No se pudo enviar el correo de aprobación."
+        : "Failed to send approval email.",
+
+      unableSend: isSpanish
+        ? "No se pudo enviar el correo de aprobación."
+        : "Unable to send approval email.",
     };
 
     const html = `
@@ -118,9 +143,7 @@ export async function POST(req: Request) {
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f9fafb;border-radius:12px;padding:16px;margin-bottom:24px;">
                   <tr>
                     <td style="padding:6px 0;font-size:13px;color:#374151;">
-                      <strong>${copy.accountEmail}:</strong> ${escapeHtml(
-      email
-    )}
+                      <strong>${copy.accountEmail}:</strong> ${escapeHtml(email)}
                     </td>
                   </tr>
                   <tr>
@@ -149,7 +172,7 @@ export async function POST(req: Request) {
                   ${copy.footer}
                 </p>
                 <p style="margin:6px 0 0;font-size:11px;color:#6b7280;">
-                  © ${new Date().getFullYear()} Paso Libre. All rights reserved.
+                  © ${new Date().getFullYear()} Paso Libre. ${copy.rights}
                 </p>
               </td>
             </tr>
@@ -169,8 +192,9 @@ export async function POST(req: Request) {
 
     if (error) {
       console.error("Error sending approval email:", error);
+
       return NextResponse.json(
-        { success: false, message: "Failed to send approval email." },
+        { success: false, message: copy.failedSend },
         { status: 500 }
       );
     }

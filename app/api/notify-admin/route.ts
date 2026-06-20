@@ -1,7 +1,18 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+const getResend = () => {
+  const apiKey = process.env.RESEND_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("Missing RESEND_API_KEY.");
+  }
+
+  return new Resend(apiKey);
+};
 
 const escapeHtml = (value: string) =>
   String(value || "")
@@ -13,6 +24,8 @@ const escapeHtml = (value: string) =>
 
 export async function POST(req: Request) {
   try {
+    const resend = getResend();
+
     const body = await req.json();
 
     const pendingSignupId = String(body.pendingSignupId || "").trim();
@@ -58,9 +71,7 @@ export async function POST(req: Request) {
       footer: isSpanish
         ? "Este mensaje fue generado automáticamente desde Paso Libre."
         : "This message was generated automatically from Paso Libre.",
-      rights: isSpanish
-        ? "Todos los derechos reservados."
-        : "All rights reserved.",
+      rights: isSpanish ? "Todos los derechos reservados." : "All rights reserved.",
       subject: isSpanish
         ? `Nueva persona pendiente de aprobación: ${firstName} ${lastName}`
         : `New User Pending Approval: ${firstName} ${lastName}`,
@@ -82,20 +93,16 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!process.env.RESEND_API_KEY) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: copy.missingResendKey,
-        },
-        { status: 500 }
-      );
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (!supabaseUrl) {
+      throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL.");
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
     const adminDashboardUrl = `${siteUrl}/account-manager`;
 
-    const logoUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/email-assets/logo-title_nobg.png`;
+    const logoUrl = `${supabaseUrl}/storage/v1/object/public/email-assets/logo-title_nobg.png`;
 
     const html = `
       <div style="margin:0;padding:0;background-color:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
