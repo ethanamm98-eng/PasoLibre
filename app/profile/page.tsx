@@ -927,7 +927,7 @@ export default function ProfilePage() {
             </div>
           </section>
 
-          {/* Mobile Profile Completion */}
+          {/* Mobile Profile Completion Section */}
           <div className="block xl:hidden">
             <ProfilePanel
               title={t.profileCompletion}
