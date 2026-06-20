@@ -23,6 +23,8 @@ import {
 
 import { supabase } from "../lib/supabase/supabaseClient";
 import { SchedulerForm } from "../lib/interfaces/events";
+import { getOrCreateAttendanceSheet } from "../helpers/attendance-report";
+import { AttendanceSheetRecord } from "../lib/interfaces/attendance-report";
 
 type ProfileOption = {
   id: string;
@@ -111,6 +113,12 @@ const AddAttendanceRecordModal = ({
   saving,
   editingRecordId,
   closeModal,
+  eventMap,
+  attendanceSheets,
+  setAttendanceSheets,
+  lang,
+  loadAttendanceData,
+  setSaving,
 }: {
   events: { id: string; name_en: string }[];
   selectedEventDetails: { date: string; time: string; location: string } | null;
@@ -124,12 +132,20 @@ const AddAttendanceRecordModal = ({
   };
   handleAttendanceFormChange: (
     field: keyof typeof attendanceForm,
-    value: string
+    value: string,
   ) => void;
-  handleSaveAttendanceRecord: () => void;
+  handleSaveAttendanceRecord: any;
   saving: boolean;
   editingRecordId?: string;
   closeModal: () => void;
+  eventMap: Map<string, SchedulerForm>;
+  attendanceSheets: AttendanceSheetRecord[];
+  setAttendanceSheets: React.Dispatch<
+    React.SetStateAction<AttendanceSheetRecord[]>
+  >;
+  lang: string;
+  loadAttendanceData: () => Promise<void>;
+  setSaving: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const { language } = useLanguage();
   const t = translations[language === "es" ? "es" : "en"];
@@ -138,7 +154,7 @@ const AddAttendanceRecordModal = ({
   const [profilesLoading, setProfilesLoading] = useState(false);
   const [profileSearch, setProfileSearch] = useState("");
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(
-    null
+    null,
   );
 
   useEffect(() => {
@@ -149,7 +165,7 @@ const AddAttendanceRecordModal = ({
         const { data, error } = await supabase
           .from("profiles")
           .select(
-            "id, first_name, last_name, email, phone, race, nationality, is_approved, account_status, language_preference"
+            "id, first_name, last_name, email, phone, race, nationality, is_approved, account_status, language_preference",
           )
           .eq("is_approved", true)
           .neq("account_status", "suspended")
@@ -181,7 +197,7 @@ const AddAttendanceRecordModal = ({
 
   function formatEventSchedule(
     dateValue: string | null,
-    timeValue: string | null
+    timeValue: string | null,
   ) {
     const dateLabel = formatDateLabel(dateValue);
     if (!timeValue) return dateLabel;
@@ -195,7 +211,7 @@ const AddAttendanceRecordModal = ({
       {
         hour: "numeric",
         minute: "2-digit",
-      }
+      },
     );
 
     return `${dateLabel} • ${timeLabel}`;
@@ -247,7 +263,7 @@ const AddAttendanceRecordModal = ({
 
   const selectedProfile = useMemo(
     () => profiles.find((profile) => profile.id === selectedProfileId) || null,
-    [profiles, selectedProfileId]
+    [profiles, selectedProfileId],
   );
 
   return (
@@ -473,7 +489,7 @@ const AddAttendanceRecordModal = ({
                     <CalendarDays size={15} className="text-blue-600" />
                     {formatEventSchedule(
                       selectedEventDetails.date,
-                      selectedEventDetails.time
+                      selectedEventDetails.time,
                     )}
                   </div>
                   <div className="flex items-center gap-2">
@@ -499,7 +515,21 @@ const AddAttendanceRecordModal = ({
           </button>
 
           <button
-            onClick={handleSaveAttendanceRecord}
+            onClick={() =>
+              handleSaveAttendanceRecord({
+                attendanceForm,
+                editingRecordId,
+                getOrCreateAttendanceSheet,
+                loadAttendanceData,
+                closeModal,
+                setSaving,
+                t,
+                eventMap,
+                attendanceSheets,
+                setAttendanceSheets,
+                lang,
+              })
+            }
             disabled={saving}
             className="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-linear-to-r from-[#0d4db0] to-indigo-700 px-5 py-3 font-medium text-white shadow-lg 
               transition hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"

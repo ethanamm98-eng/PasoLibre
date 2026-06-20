@@ -1,7 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useState, useMemo, useEffect } from "react";
-import Swal from "sweetalert2";
+import { Suspense, useState, useMemo, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Search,
@@ -32,6 +31,11 @@ import {
   exportToPDF,
   formatEventSchedule,
   getEventLocation,
+  getLanguageKey,
+  getLocalizedEventName,
+  handleDeleteAttendanceRecord,
+  handleSaveAttendanceRecord,
+  handleUpdateDonations,
 } from "../helpers/attendance-report";
 
 import Navbar from "../components/NavBar";
@@ -39,75 +43,15 @@ import AddAttendanceRecordModal from "../components/AddAttendanceRecordModal";
 import AttendanceReportTable from "../components/AttendanceReportTable";
 import { StatCard } from "../components/elements/AttendanceReport";
 import { SchedulerForm } from "../lib/interfaces/events";
-
-export type ProfileRecord = {
-  first_name?: string | null;
-  last_name?: string | null;
-  role?: string | null;
-  is_approved?: boolean;
-  account_status?: "active" | "suspended" | null;
-  profile_picture?: string | null;
-  language_preference?: string | null;
-  source?: string | null;
-  status?: string | null;
-};
-
-export type MemberProfileRecord = {
-  id: string;
-  first_name?: string | null;
-  last_name?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  profile_picture?: string | null;
-};
-
-export type AttendanceSheetRecord = {
-  id: string;
-  event_id: string;
-  occurrence_date?: string | null;
-  title: string | null;
-  notes: string | null;
-  is_active: boolean;
-};
-
-export type AttendanceEntryRecord = {
-  id: string;
-  attendance_sheet_id: string;
-  participant_name: string;
-  participant_email: string | null;
-  participant_phone: string | null;
-  checked_in: boolean;
-  checked_in_at: string | null;
-  notes: string | null;
-  created_at: string;
-};
-
-export type AttendanceRecord = {
-  id: string;
-  attendanceSheetId: string;
-  eventId: string;
-  name: string;
-  email: string;
-  phone: string;
-  profilePicture: string;
-  date: string;
-  rawDate: string;
-  time: string;
-  location: string;
-  status: "registered" | "attended" | "no_show" | "cancelled";
-  checkedIn: boolean;
-  checkedInAt: string | null;
-  notes: string;
-};
-
-export type AttendanceForm = {
-  eventId: string;
-  name: string;
-  email: string;
-  phone: string;
-  status: "registered" | "attended" | "no_show" | "cancelled";
-  notes: string;
-};
+import {
+  AttendanceEntryRecord,
+  AttendanceForm,
+  AttendanceRecord,
+  AttendanceSheetRecord,
+  LanguageKey,
+  MemberProfileRecord,
+  ProfileRecord,
+} from "../lib/interfaces/attendance-report";
 
 const emptyForm: AttendanceForm = {
   eventId: "",
@@ -117,8 +61,6 @@ const emptyForm: AttendanceForm = {
   status: "attended",
   notes: "",
 };
-
-type LanguageKey = "en" | "es";
 
 const attendanceReportCopy: Record<
   LanguageKey,
@@ -277,21 +219,8 @@ const attendanceReportCopy: Record<
   },
 };
 
-const getLanguageKey = (language?: string | null): LanguageKey =>
-  language === "es" ? "es" : "en";
-
-const getLocalizedEventName = (
-  event: SchedulerForm | undefined,
-  lang: LanguageKey
-) => {
-  if (!event) return "";
-  return lang === "es"
-    ? event.name_es || event.name_en || ""
-    : event.name_en || event.name_es || "";
-};
-
-export default function AdminAttendancePage() {
-  const { language } = useLanguage(); // es or en
+function AdminAttendancePageContent() {
+    const { language } = useLanguage(); // es or en
   const lang = getLanguageKey(language);
   const t = attendanceReportCopy[lang];
   const router = useRouter();
@@ -303,7 +232,7 @@ export default function AdminAttendancePage() {
 
   const [, setProfile] = useState<ProfileRecord | null>(null);
   const [memberProfiles, setMemberProfiles] = useState<MemberProfileRecord[]>(
-    []
+    [],
   );
   const [events, setEvents] = useState<SchedulerForm[]>([]);
   const [attendanceSheets, setAttendanceSheets] = useState<
@@ -344,7 +273,7 @@ export default function AdminAttendancePage() {
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select(
-            "first_name, last_name, role, is_approved, account_status, profile_picture, language_preference"
+            "first_name, last_name, role, is_approved, account_status, profile_picture, language_preference",
           )
           .eq("id", user.id)
           .maybeSingle<ProfileRecord>();
@@ -386,7 +315,7 @@ export default function AdminAttendancePage() {
           supabase
             .from("events")
             .select(
-              "id, name_en, name_es, date, time, city, country, street_address, price, total_donations_usd, total_members_donated"
+              "id, name_en, name_es, date, time, city, country, street_address, price, total_donations_usd, total_members_donated",
             )
             .order("created_at", { ascending: false }),
           supabase
@@ -396,14 +325,14 @@ export default function AdminAttendancePage() {
           supabase
             .from("attendance_sheet_entries")
             .select(
-              "id, attendance_sheet_id, participant_name, participant_email, participant_phone, checked_in, checked_in_at, status, notes, created_at"
+              "id, attendance_sheet_id, participant_name, participant_email, participant_phone, checked_in, checked_in_at, status, notes, created_at",
             )
             .order("created_at", { ascending: false }),
           supabase
             .from("profiles")
             .select("id, first_name, last_name, email, phone, profile_picture")
             .order("first_name", { ascending: true }),
-        ]
+        ],
       );
 
       if (eventsRes.error) throw eventsRes.error;
@@ -434,12 +363,12 @@ export default function AdminAttendancePage() {
 
   const eventMap = useMemo(
     () => new Map(events.map((event) => [event.id, event])),
-    [events]
+    [events],
   );
 
   const sheetMap = useMemo(
     () => new Map(attendanceSheets.map((sheet) => [sheet.id, sheet])),
-    [attendanceSheets]
+    [attendanceSheets],
   );
 
   const profileByEmail = useMemo(() => {
@@ -488,7 +417,7 @@ export default function AdminAttendancePage() {
     const byName = profileByName.get(
       String(entry.participant_name || "")
         .trim()
-        .toLowerCase()
+        .toLowerCase(),
     );
     if (byName) return byName;
 
@@ -573,7 +502,7 @@ export default function AdminAttendancePage() {
 
   const totalPages = Math.max(
     1,
-    Math.ceil(filteredRecords.length / recordsPerPage)
+    Math.ceil(filteredRecords.length / recordsPerPage),
   );
 
   const paginatedRecords = useMemo(() => {
@@ -585,7 +514,7 @@ export default function AdminAttendancePage() {
     filteredRecords.length === 0 ? 0 : (currentPage - 1) * recordsPerPage + 1;
   const pageEnd = Math.min(
     currentPage * recordsPerPage,
-    filteredRecords.length
+    filteredRecords.length,
   );
 
   useEffect(() => {
@@ -636,7 +565,7 @@ export default function AdminAttendancePage() {
 
   const handleAttendanceFormChange = (
     key: keyof AttendanceForm,
-    value: string
+    value: string,
   ) => {
     setAttendanceForm((prev) => ({
       ...prev,
@@ -667,240 +596,6 @@ export default function AdminAttendancePage() {
   const closeModal = () => {
     setIsModalOpen(false);
     resetAttendanceForm();
-  };
-
-  // ----------------------   API   ------------------------
-
-  const getOrCreateAttendanceSheet = async (eventId: string) => {
-    const existing = attendanceSheets.find(
-      (sheet) => sheet.event_id === eventId
-    );
-    if (existing) return existing.id;
-
-    const event = eventMap.get(eventId);
-
-    const { data, error } = await supabase
-      .from("attendance_sheets")
-      .insert({
-        event_id: eventId,
-        title: getLocalizedEventName(event, lang)
-          ? `${getLocalizedEventName(event, lang)} ${t.attendanceSheetSuffix}`
-          : t.attendanceSheetFallback,
-        is_active: true,
-      })
-      .select("id, event_id, title, notes, is_active")
-      .single();
-
-    if (error) throw error;
-
-    const created = data as AttendanceSheetRecord;
-    setAttendanceSheets((prev) => [created, ...prev]);
-    return created.id;
-  };
-
-  const handleSaveAttendanceRecord = async () => {
-    if (!attendanceForm.eventId.trim() || !attendanceForm.name.trim()) return;
-
-    try {
-      setSaving(true);
-
-      const attendanceSheetId = await getOrCreateAttendanceSheet(
-        attendanceForm.eventId
-      );
-
-      const payload = {
-        attendance_sheet_id: attendanceSheetId,
-        participant_name: attendanceForm.name.trim(),
-        participant_email: attendanceForm.email.trim() || null,
-        participant_phone: attendanceForm.phone.trim() || null,
-        status: "attended",
-        checked_in: attendanceForm.status === "attended",
-        checked_in_at:
-          attendanceForm.status === "attended"
-            ? new Date().toISOString()
-            : null,
-        notes: attendanceForm.notes.trim() || null,
-      };
-
-      if (editingRecordId) {
-        const { error } = await supabase
-          .from("attendance_sheet_entries")
-          .update(payload)
-          .eq("id", editingRecordId);
-
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from("attendance_sheet_entries")
-          .insert(payload);
-
-        if (error) throw error;
-      }
-
-      Swal.fire({
-        icon: "success",
-        title: t.saveSuccessTitle,
-        text: t.saveSuccessText,
-        timer: 2000,
-      });
-      await loadAttendanceData();
-      closeModal();
-    } catch (error) {
-      console.error("Failed to save attendance entry:", error);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleDeleteAttendanceRecord = async (id: string) => {
-    const result = await Swal.fire({
-      title: t.deleteConfirmTitle,
-      text: t.deleteConfirmText,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: t.deleteConfirmButton,
-    });
-
-    if (!result.isConfirmed) return;
-
-    try {
-      const { error } = await supabase
-        .from("attendance_sheet_entries")
-        .delete()
-        .eq("id", id);
-
-      if (error) throw error;
-
-      Swal.fire({
-        icon: "success",
-        title: t.deleteSuccessTitle,
-        text: t.deleteSuccessText,
-        timer: 2000,
-      });
-
-      await loadAttendanceData();
-    } catch (error) {
-      console.error("Failed to delete attendance entry:", error);
-    }
-  };
-
-  const handleUpdateDonations = async (eventId: string) => {
-    const event = eventMap.get(eventId);
-    if (!event) return;
-
-    const result = await Swal.fire({
-      title: "Update Donation Statistics",
-      html: `
-        <div style="display:flex;flex-direction:column;gap:12px;text-align:left;">
-          <div>
-            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:4px;">
-              Total Donations (USD)
-            </label>
-            <input
-              id="swal-total-donations"
-              type="number"
-              min="0"
-              step="0.01"
-              class="swal2-input"
-              value="${event.total_donations_usd ?? 0}"
-              style="margin:0;width:100%;"
-            />
-          </div>
-  
-          <div>
-            <label style="display:block;font-size:13px;font-weight:600;margin-bottom:4px;">
-              Total Members Donated
-            </label>
-            <input
-              id="swal-total-members"
-              type="number"
-              min="0"
-              step="1"
-              class="swal2-input"
-              value="${event.total_members_donated ?? 0}"
-              style="margin:0;width:100%;"
-            />
-          </div>
-        </div>
-      `,
-      focusConfirm: false,
-      showCancelButton: true,
-      confirmButtonText: "Update",
-      cancelButtonText: "Cancel",
-      preConfirm: () => {
-        const totalDonations = parseFloat(
-          (document.getElementById("swal-total-donations") as HTMLInputElement)
-            ?.value || "0"
-        );
-
-        const totalMembers = parseInt(
-          (document.getElementById("swal-total-members") as HTMLInputElement)
-            ?.value || "0",
-          10
-        );
-
-        if (isNaN(totalDonations) || totalDonations < 0) {
-          Swal.showValidationMessage("Please enter a valid donation amount.");
-          return;
-        }
-
-        if (isNaN(totalMembers) || totalMembers < 0) {
-          Swal.showValidationMessage("Please enter a valid member count.");
-          return;
-        }
-
-        return {
-          totalDonations,
-          totalMembers,
-        };
-      },
-    });
-
-    if (!result.isConfirmed) return;
-
-    const { totalDonations, totalMembers } = result.value;
-
-    try {
-      const { error } = await supabase
-        .from("events")
-        .update({
-          total_donations_usd: totalDonations,
-          total_members_donated: totalMembers,
-        })
-        .eq("id", eventId);
-
-      if (error) throw error;
-
-      setEvents((prev) =>
-        prev.map((e) =>
-          e.id === eventId
-            ? {
-                ...e,
-                total_donations_usd: totalDonations,
-                total_members_donated: totalMembers,
-              }
-            : e
-        )
-      );
-
-      await Swal.fire({
-        icon: "success",
-        title: "Updated",
-        text: "Donation statistics updated successfully.",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-    } catch (error) {
-      console.error("Failed to update donation statistics:", error);
-
-      Swal.fire({
-        icon: "error",
-        title: "Update Failed",
-        text: "Unable to update donation statistics.",
-      });
-    }
   };
 
   // ----------------------   Render   ------------------------
@@ -1348,7 +1043,11 @@ export default function AdminAttendancePage() {
                 {selectedEvent !== "all" && (
                   <button
                     onClick={() => {
-                      handleUpdateDonations(selectedEvent);
+                      handleUpdateDonations({
+                        eventId: selectedEvent,
+                        eventMap,
+                        setEvents,
+                      });
                     }}
                     className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-[#0d4db0] to-indigo-700 px-5 py-3 
                       text-white shadow-lg shadow-blue-900/15 transition hover:-translate-y-0.5 hover:shadow-xl"
@@ -1376,6 +1075,7 @@ export default function AdminAttendancePage() {
             formatEventSchedule={formatEventSchedule}
             getInitials={getInitials}
             handleDeleteAttendanceRecord={handleDeleteAttendanceRecord}
+            loadAttendanceData={loadAttendanceData}
           />
         </div>
       </div>
@@ -1395,8 +1095,40 @@ export default function AdminAttendancePage() {
           saving={saving}
           editingRecordId={editingRecordId as string}
           closeModal={closeModal}
+          eventMap={eventMap}
+          attendanceSheets={attendanceSheets}
+          setAttendanceSheets={setAttendanceSheets}
+          lang={lang}
+          loadAttendanceData={loadAttendanceData}
+          setSaving={setSaving}
         />
       )}
     </>
+  );
+}
+
+
+export default function AdminAttendancePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.10),transparent_28%),linear-gradient(to_bottom,#f8fafc,#edf4ff)] px-4 py-12 md:px-6">
+          <Navbar />
+          <div className="mx-auto max-w-6xl pt-24">
+            <div className="rounded-4xl border border-white/70 bg-white/85 p-12 text-center shadow-[0_30px_80px_rgba(15,23,42,0.10)] backdrop-blur-xl">
+              <div className="mx-auto mb-5 h-14 w-14 animate-pulse rounded-2xl bg-linear-to-br from-[#0d4db0] to-indigo-700" />
+              <h2 className="text-xl font-semibold text-slate-900">
+                Loading attendance records
+              </h2>
+              <p className="mt-2 text-sm text-slate-500">
+                Preparing attendance report...
+              </p>
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <AdminAttendancePageContent />
+    </Suspense>
   );
 }

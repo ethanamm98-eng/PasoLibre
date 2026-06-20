@@ -13,7 +13,7 @@ import {
 
 import { useLanguage } from "../context/language";
 import { ParticipantAvatar } from "./elements/AttendanceReport";
-import { AttendanceRecord } from "../attendance-report/page";
+import { AttendanceRecord } from "../lib/interfaces/attendance-report";
 import { SchedulerForm } from "../lib/interfaces/events";
 
 const translations = {
@@ -74,6 +74,7 @@ const AttendanceReportTable = ({
   formatEventSchedule,
   getInitials,
   handleDeleteAttendanceRecord,
+  loadAttendanceData,
 }: {
   dataLoading: boolean;
   filteredRecords: AttendanceRecord[];
@@ -87,7 +88,8 @@ const AttendanceReportTable = ({
   openEditModal: (record: AttendanceRecord) => void;
   formatEventSchedule: (date: string | null, time: string | null) => string;
   getInitials: (name: string) => string;
-  handleDeleteAttendanceRecord: (recordId: string) => void;
+  handleDeleteAttendanceRecord: any;
+  loadAttendanceData: () => Promise<void>;
 }) => {
   const { language } = useLanguage();
   const t = translations[language === "es" ? "es" : "en"];
@@ -97,7 +99,7 @@ const AttendanceReportTable = ({
       `${currentPage}:${paginatedRecords
         ?.map((record) => String(record.id))
         .join("|")}`,
-    [currentPage, paginatedRecords]
+    [currentPage, paginatedRecords],
   );
 
   const [expandedState, setExpandedState] = useState<{
@@ -260,7 +262,7 @@ const AttendanceReportTable = ({
                             <p className="mt-0.5 text-xs text-slate-400">
                               {formatEventSchedule(
                                 event?.date || null,
-                                event?.time || null
+                                event?.time || null,
                               )}
                             </p>
                           </div>
@@ -306,7 +308,13 @@ const AttendanceReportTable = ({
                       </button>
 
                       <button
-                        onClick={() => handleDeleteAttendanceRecord(record.id)}
+                        onClick={() =>
+                          handleDeleteAttendanceRecord({
+                            id: record.id,
+                            loadAttendanceData,
+                            t,
+                          })
+                        }
                         className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 shadow-sm transition hover:bg-red-100"
                       >
                         <Trash2 size={15} />
@@ -393,7 +401,7 @@ const AttendanceReportTable = ({
                         <p className="mt-0.5 text-xs text-slate-400">
                           {formatEventSchedule(
                             event?.date || null,
-                            event?.time || null
+                            event?.time || null,
                           )}
                         </p>
                       </td>
@@ -415,7 +423,11 @@ const AttendanceReportTable = ({
 
                           <button
                             onClick={() =>
-                              handleDeleteAttendanceRecord(record.id)
+                              handleDeleteAttendanceRecord({
+                                id: record.id,
+                                loadAttendanceData,
+                                t,
+                              })
                             }
                             className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-red-600 shadow-sm transition hover:bg-red-100"
                           >
@@ -463,7 +475,7 @@ const AttendanceReportTable = ({
                 {Array.from({ length: totalPages }, (_, i) => i + 1)
                   .slice(
                     Math.max(0, currentPage - 3),
-                    Math.max(0, currentPage - 3) + 5
+                    Math.max(0, currentPage - 3) + 5,
                   )
                   .map((page) => (
                     <button
