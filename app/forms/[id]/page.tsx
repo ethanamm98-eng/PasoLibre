@@ -1,5 +1,5 @@
 import React from "react";
-import FormBuilder from "../../components/FormPage";
+// import FormBuilder from "../../components/FormPage";
 import Navbar from "@/app/components/NavBar";
 import UnderConstructionOverlay from "@/app/components/UnderConstructionOverlay";
 
@@ -14,7 +14,7 @@ async function Page() {
   return (
     <div>
       <Navbar />
-      <FormBuilder />
+      {/* <FormBuilder /> */}
     </div>
   );
 }
