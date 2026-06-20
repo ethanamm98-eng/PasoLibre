@@ -1,6 +1,8 @@
-export const FormPage = () => {
+ const FormPage = () => {
   return <div className="min-h-screen flex items-center justify-center"></div>;
 };
+
+export default FormPage;
 
 // "use client";
 // import { use, useEffect, useState } from "react";
