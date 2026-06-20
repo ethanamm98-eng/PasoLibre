@@ -221,7 +221,7 @@ function Footer() {
                                 className: "flex justify-center md:justify-end",
                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
                                     href: `mailto:${t.emailLabel}`,
-                                    className: "font-bold text-xl sm:text-2xl md:text-3xl tracking-tighter text-[#0d4db0]/80 hover:text-sky-400 transition-all duration-500 wrap-break-words",
+                                    className: "font-bold text-xl sm:text-2xl md:text-3xl tracking-tighter text-[#0d4db0]/80 hover:text-sky-400 transition-all duration-500   wrap-break-words",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                             className: "underline underline-offset-4 text-sky-600 hover:text-[#0d4db0]/80 duration-500 transition",
@@ -342,7 +342,7 @@ function Footer() {
             }, this),
             showButton && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["motion"].button, {
                 onClick: scrollToTop,
-                className: "fixed bottom-6 right-6 w-12 h-12 md:w-16 md:h-16 bg-linear-to-tr from-sky-400 to-indigo-400 text-white rounded-full shadow-xl  flex items-center justify-center cursor-pointer hover:scale-110 transition-transform duration-300 z-50",
+                className: "fixed bottom-6 right-6 w-12 h-12 md:w-16 md:h-16 bg-linear-to-tr from-sky-400 to-indigo-400 text-white rounded-full shadow-xl    flex items-center justify-center cursor-pointer hover:scale-110 transition-transform duration-300 z-50",
                 whileHover: {
                     scale: 1.15
                 },
