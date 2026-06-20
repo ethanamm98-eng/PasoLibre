@@ -2,12 +2,31 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const getSupabaseAdmin = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl) throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL.");
+  if (!serviceRoleKey) throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY.");
+
+  return createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+};
+
+const getResend = () => {
+  const apiKey = process.env.RESEND_API_KEY;
+
+  if (!apiKey) throw new Error("Missing RESEND_API_KEY.");
+
+  return new Resend(apiKey);
+};
 
 const escapeHtml = (value: string) =>
   String(value || "")
@@ -26,9 +45,15 @@ async function sendDeniedEmail({
   firstName: string;
   reason?: string;
 }) {
+  const resend = getResend();
+
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const contactUrl = `${siteUrl}/contact`;
-  const logoUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/email-assets/logo-title_nobg.png`;
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!supabaseUrl) throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL.");
+
+  const logoUrl = `${supabaseUrl}/storage/v1/object/public/email-assets/logo-title_nobg.png`;
 
   const html = `
     <div style="margin:0;padding:0;background-color:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
@@ -112,6 +137,8 @@ async function sendDeniedEmail({
 
 export async function POST(req: Request) {
   try {
+    const supabaseAdmin = getSupabaseAdmin();
+
     const body = await req.json();
 
     const pendingSignupId = String(body.pendingSignupId || "").trim();
@@ -173,13 +200,15 @@ export async function POST(req: Request) {
   } catch (error: unknown) {
     console.error("deny-user error:", error);
 
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Unable to deny signup request.";
+
     return NextResponse.json(
       {
         success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : "Unable to deny signup request.",
+        message,
       },
       { status: 500 }
     );

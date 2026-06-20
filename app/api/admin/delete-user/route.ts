@@ -1,13 +1,33 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+const getSupabaseAdmin = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl) {
+    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL.");
+  }
+
+  if (!serviceRoleKey) {
+    throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY.");
+  }
+
+  return createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+};
 
 export async function POST(req: Request) {
   try {
+    const supabaseAdmin = getSupabaseAdmin();
+
     const { profileId } = await req.json();
 
     if (!profileId) {
@@ -44,10 +64,12 @@ export async function POST(req: Request) {
       .update({ profile_id: null })
       .eq("profile_id", profile.id);
 
-    await supabaseAdmin
-      .from("pending_signups")
-      .delete()
-      .eq("email", profile.email);
+    if (profile.email) {
+      await supabaseAdmin
+        .from("pending_signups")
+        .delete()
+        .eq("email", profile.email);
+    }
 
     const { error: deleteProfileError } = await supabaseAdmin
       .from("profiles")
@@ -68,11 +90,13 @@ export async function POST(req: Request) {
   } catch (error: unknown) {
     console.error("delete-user error:", error);
 
+    const message =
+      error instanceof Error ? error.message : "Unable to delete user.";
+
     return NextResponse.json(
       {
         success: false,
-        message:
-          (error as { message?: string })?.message || "Unable to delete user.",
+        message,
       },
       { status: 500 }
     );

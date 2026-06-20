@@ -3,10 +3,23 @@ import { createClient } from "@supabase/supabase-js";
 import { SchedulerForm } from "@/app/lib/interfaces/events";
 import { ParticipantRecord } from "@/app/components/EventDetails";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ""
-);
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+const getSupabaseAdmin = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl) throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL.");
+  if (!serviceRoleKey) throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY.");
+
+  return createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+};
 
 const normalizeStatus = (status?: string) => {
   if (status === "attended" || status === "accepted") return "attended";
@@ -39,7 +52,21 @@ const getExcludedDateKeys = (event: SchedulerForm) => {
   );
 };
 
+const selectSheetColumns = `
+  id,
+  event_id,
+  occurrence_date,
+  title,
+  notes,
+  is_active,
+  created_by,
+  created_at,
+  updated_at
+`;
+
 const getEventById = async (eventId: string) => {
+  const supabase = getSupabaseAdmin();
+
   const { data, error } = await supabase
     .from("events")
     .select(
@@ -62,19 +89,9 @@ const getEventById = async (eventId: string) => {
   return data;
 };
 
-const selectSheetColumns = `
-  id,
-  event_id,
-  occurrence_date,
-  title,
-  notes,
-  is_active,
-  created_by,
-  created_at,
-  updated_at
-`;
-
 const getAttendanceSheetById = async (attendanceSheetId: string) => {
+  const supabase = getSupabaseAdmin();
+
   const { data, error } = await supabase
     .from("attendance_sheets")
     .select(selectSheetColumns)
@@ -89,6 +106,8 @@ const getAttendanceSheetByOccurrence = async (
   eventId: string,
   occurrenceDate: string
 ) => {
+  const supabase = getSupabaseAdmin();
+
   const { data, error } = await supabase
     .from("attendance_sheets")
     .select(selectSheetColumns)
@@ -107,6 +126,8 @@ const createAttendanceSheetForOccurrence = async ({
   event: SchedulerForm;
   occurrenceDate: string;
 }) => {
+  const supabase = getSupabaseAdmin();
+
   const title = event?.name_en || event?.name_es || "Untitled Event";
 
   const { data, error } = await supabase
@@ -123,7 +144,12 @@ const createAttendanceSheetForOccurrence = async ({
 
   if (!error) return data;
 
-  if (typeof error === "object" && error !== null && "code" in error && error.code === "23505") {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === "23505"
+  ) {
     return getAttendanceSheetByOccurrence(event.id, occurrenceDate);
   }
 
@@ -144,7 +170,8 @@ const resolveAttendanceSheet = async ({
   const event = eventId ? await getEventById(eventId) : null;
 
   let resolvedOccurrenceDate =
-    normalizeOccurrenceDate(occurrenceDate) || normalizeOccurrenceDate(event?.date);
+    normalizeOccurrenceDate(occurrenceDate) ||
+    normalizeOccurrenceDate(event?.date);
 
   if (event && resolvedOccurrenceDate) {
     const excludedDates = getExcludedDateKeys(event);
@@ -215,6 +242,8 @@ const resolveAttendanceSheet = async ({
 };
 
 const getEntriesForSheet = async (sheetId: string) => {
+  const supabase = getSupabaseAdmin();
+
   const { data, error } = await supabase
     .from("attendance_sheet_entries")
     .select(
@@ -348,7 +377,8 @@ export async function GET(req: Request) {
     return NextResponse.json(
       {
         success: false,
-        message: error instanceof Error ? error.message : "Unable to load attendance.",
+        message:
+          error instanceof Error ? error.message : "Unable to load attendance.",
       },
       { status: 500 }
     );
@@ -357,6 +387,8 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const supabase = getSupabaseAdmin();
+
     const body = await req.json();
 
     const {
@@ -481,7 +513,10 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         success: false,
-        message: error instanceof Error ? error.message : "Unable to confirm attendance.",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to confirm attendance.",
       },
       { status: 500 }
     );
@@ -490,6 +525,8 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    const supabase = getSupabaseAdmin();
+
     const body = await req.json();
 
     const {
@@ -572,7 +609,10 @@ export async function DELETE(req: Request) {
     return NextResponse.json(
       {
         success: false,
-        message: error instanceof Error ? error.message : "Unable to remove attendance.",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unable to remove attendance.",
       },
       { status: 500 }
     );

@@ -2,15 +2,45 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const getSupabaseAdmin = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl) throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL.");
+  if (!serviceRoleKey) throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY.");
+
+  return createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+};
+
+const getResend = () => {
+  const apiKey = process.env.RESEND_API_KEY;
+
+  if (!apiKey) throw new Error("Missing RESEND_API_KEY.");
+
+  return new Resend(apiKey);
+};
+
+const escapeHtml = (value: string) =>
+  String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 
 export async function POST(req: Request) {
   try {
+    const supabaseAdmin = getSupabaseAdmin();
+    const resend = getResend();
+
     const body = await req.json();
 
     const firstName = String(body.firstName || "").trim();
@@ -40,9 +70,19 @@ export async function POST(req: Request) {
 
     if (insertError) throw insertError;
 
+    const adminEmail =
+      process.env.ADMIN_CONTACT_EMAIL || "ethan.a.mm98@gmail.com";
+
+    const safeFirstName = escapeHtml(firstName);
+    const safeLastName = escapeHtml(lastName);
+    const safePhone = escapeHtml(phone || "Not provided");
+    const safeEmail = escapeHtml(email);
+    const safeSubject = escapeHtml(subject);
+    const safeMessage = escapeHtml(message);
+
     const { error: emailError } = await resend.emails.send({
       from: process.env.EMAIL_FROM || "Paso Libre <questions@pasolibre.org>",
-      to: process.env.ADMIN_CONTACT_EMAIL || "ethan.a.mm98@gmail.com",
+      to: adminEmail,
       replyTo: email,
       subject: `New Contact Message: ${subject}`,
       html: `
@@ -54,13 +94,13 @@ export async function POST(req: Request) {
             </div>
 
             <div style="padding:30px 36px;color:#111827;">
-              <p><strong>Name:</strong> ${firstName} ${lastName}</p>
-              <p><strong>Email:</strong> ${email}</p>
-              <p><strong>Phone:</strong> ${phone || "Not provided"}</p>
-              <p><strong>Subject:</strong> ${subject}</p>
+              <p><strong>Name:</strong> ${safeFirstName} ${safeLastName}</p>
+              <p><strong>Email:</strong> ${safeEmail}</p>
+              <p><strong>Phone:</strong> ${safePhone}</p>
+              <p><strong>Subject:</strong> ${safeSubject}</p>
 
               <div style="margin-top:22px;padding:18px;background:#f9fafb;border-radius:14px;border:1px solid #e5e7eb;">
-                <p style="margin:0;white-space:pre-line;line-height:1.6;color:#374151;">${message}</p>
+                <p style="margin:0;white-space:pre-line;line-height:1.6;color:#374151;">${safeMessage}</p>
               </div>
             </div>
           </div>
@@ -72,14 +112,18 @@ export async function POST(req: Request) {
       throw new Error(emailError.message || "Failed to send email.");
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      message: "Message sent successfully.",
+    });
   } catch (error: unknown) {
     console.error("contact route error:", error);
 
     return NextResponse.json(
       {
         success: false,
-        message: error instanceof Error ? error.message : "Unable to send message.",
+        message:
+          error instanceof Error ? error.message : "Unable to send message.",
       },
       { status: 500 }
     );

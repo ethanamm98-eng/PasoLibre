@@ -1,13 +1,28 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+const getSupabaseAdmin = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl) throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL.");
+  if (!serviceRoleKey) throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY.");
+
+  return createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+};
 
 export async function GET() {
   try {
+    const supabaseAdmin = getSupabaseAdmin();
+
     const { data: profiles, error: profilesError } = await supabaseAdmin
       .from("profiles")
       .select(
@@ -80,7 +95,8 @@ export async function GET() {
         username: profile.username,
         email: profile.email,
         phone: profile.phone || "",
-        status: profile.account_status === "suspended" ? "suspended" : "active",
+        status:
+          profile.account_status === "suspended" ? "suspended" : "active",
         role: profile.role || "member",
         gender: profile.gender || "",
         pronouns: profile.pronouns || "",
@@ -89,8 +105,8 @@ export async function GET() {
         country: profile.country || "",
         sexualOrientation: profile.sexual_orientation || "",
         occupation: profile.occupation || "",
-        race: profile?.race || "",
-        nationality: profile?.nationality,
+        race: profile.race || "",
+        nationality: profile.nationality || "",
         profilePicture: profile.profile_picture || "",
         isApproved: !!profile.is_approved,
         language_preference: profile.language_preference || "en",
@@ -122,6 +138,7 @@ export async function GET() {
         occupation: pending.occupation || "",
         profilePicture: pending.profile_picture || "",
         isApproved: false,
+        language_preference: pending.language_preference || "en",
         createdAt: pending.created_at,
         reviewedAt: pending.reviewed_at,
         denialReason: pending.denial_reason,
@@ -138,10 +155,13 @@ export async function GET() {
   } catch (error) {
     console.error("admin/users error:", error);
 
+    const message =
+      error instanceof Error ? error.message : "Failed to load users.";
+
     return NextResponse.json(
       {
         success: false,
-        message: (error as Error)?.message || "Failed to load users.",
+        message,
       },
       { status: 500 }
     );

@@ -6,3 +6,5 @@ build/
 *.log
 coverage/
 .idea/
+.vscode/
+.next/
