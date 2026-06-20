@@ -1,3 +1,10 @@
+const ContentManager = () => {
+  return (
+    <div></div>
+  );
+}
+export default ContentManager;
+
 // "use client";
 // import { useState, useEffect, useRef } from "react";
 

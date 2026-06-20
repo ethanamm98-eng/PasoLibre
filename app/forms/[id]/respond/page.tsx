@@ -1,3 +1,10 @@
+const Page = () => {
+  return (
+    <div></div>
+  );
+}
+export default Page;
+
 // "use client";
 // import { useEffect, useState } from "react";
 // import { useParams, useRouter, usePathname } from "next/navigation";
