@@ -1,8 +1,10 @@
 // app/api/resolve-username/route.ts
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/app/lib/supabase/supabaseAdmin";
+import { getSupabaseAdmin } from "@/app/lib/supabase/supabaseAdmin";
 
 export async function POST(req: Request) {
+  const supabaseAdmin = getSupabaseAdmin();
+  
   try {
     const body = await req.json();
     const username = String(body?.username || "").trim();
