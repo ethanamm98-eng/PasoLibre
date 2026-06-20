@@ -1,3 +1,10 @@
+const Page = () => {
+  return (
+    <div></div>
+  );
+}
+export default Page;
+
 // "use client";
 // import React, { useState, useEffect } from "react";
 // import { AiFillStar, AiOutlineStar, AiTwotoneStar } from "react-icons/ai";

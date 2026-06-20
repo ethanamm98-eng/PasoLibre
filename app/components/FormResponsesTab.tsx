@@ -1,3 +1,10 @@
+const Page = () => {
+  return (
+    <div></div>
+  );
+}
+export default Page;
+
 // import React, { useState, useMemo } from "react";
 // // import { FAKE_RESPONSES } from "../lib/dummyData/forms";
 

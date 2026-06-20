@@ -1,5 +1,11 @@
-// "use client";
+const Page = () => {
+  return (
+    <div></div>
+  );
+}
+export default Page;
 
+// "use client";
 // import Image from "next/image";
 // import { useState, useEffect } from "react";
 

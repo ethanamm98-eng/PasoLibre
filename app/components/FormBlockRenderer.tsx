@@ -1,3 +1,10 @@
+const Page = () => {
+  return (
+    <div></div>
+  );
+}
+export default Page;
+
 // // BlockRenderer.tsx
 // "use client";
 // import React, { useRef } from "react";

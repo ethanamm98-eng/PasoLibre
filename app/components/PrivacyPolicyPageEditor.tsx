@@ -1,3 +1,10 @@
+const Page = () => {
+  return (
+    <div></div>
+  );
+}
+export default Page;
+
 // "use client";
 // import { useState } from "react";
 // import { privacyPolicyTranslations } from "../lib/translations/privacy-policy";

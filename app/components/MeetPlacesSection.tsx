@@ -1,5 +1,4 @@
 "use client";
-
 import { motion } from "framer-motion";
 import { FaWalking, FaBookOpen, FaUsers, FaHeart } from "react-icons/fa";
 import { useLanguage } from "../context/language";

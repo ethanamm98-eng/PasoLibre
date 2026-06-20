@@ -1,3 +1,10 @@
+const Page = () => {
+  return (
+    <div></div>
+  );
+}
+export default Page;
+
 // "use client";
 // import { LuMessageCircle, LuStar } from "react-icons/lu";
 // import { useLanguage } from "../context/language";

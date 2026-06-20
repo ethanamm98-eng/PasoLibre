@@ -1,3 +1,10 @@
+const Page = () => {
+  return (
+    <div></div>
+  );
+}
+export default Page;
+
 // "use client";
 // import { useMemo, useState, useEffect } from "react";
 // import "leaflet/dist/leaflet.css";

@@ -1,5 +1,11 @@
-// "use client";
+const Page = () => {
+  return (
+    <div></div>
+  );
+}
+export default Page;
 
+// "use client";
 // import { useMemo, useRef, useState } from "react";
 // import html2canvas from "html2canvas";
 // import {
