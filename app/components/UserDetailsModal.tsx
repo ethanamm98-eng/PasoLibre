@@ -189,7 +189,7 @@ export default function UserDetailsModal({
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.16),transparent_25%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.10),transparent_20%)] pointer-events-none" />
 
               <div className="relative px-6 md:px-8 py-10 flex flex-col lg:flex-row lg:items-center gap-6">
-                <div className="flex md:flex-roe flex-col items-center gap-5">
+                <div className="flex md:flex-row flex-col items-center gap-5">
                   <div className="w-24 h-24 md:w-28 md:h-28 rounded-3xl bg-white/15 border border-white/25 overflow-hidden shadow-lg flex items-center 
                   justify-center text-white text-2xl font-semibold flex-col md:flex-row">
                     {user.profilePicture ? (

@@ -13264,6 +13264,12 @@
   }
 
   @media (min-width: 48rem) {
+    .md\:min-w-full {
+      min-width: 100%;
+    }
+  }
+
+  @media (min-width: 48rem) {
     .md\:shrink-0 {
       flex-shrink: 0;
     }

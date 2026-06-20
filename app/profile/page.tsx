@@ -994,7 +994,7 @@ export default function ProfilePage() {
         </aside>
 
         <section className="min-w-0 flex-col gap-3 flex">
-          <div className="hidden md:flex">
+          <div className="hidden md:flex md:min-w-full">
             <ProfilePanel
               title={t.profileCompletion}
               icon={<BadgeCheck size={16} />}
@@ -1192,7 +1192,7 @@ function ProfilePanel({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-4xl border border-white/70 bg-white/90 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.07)] backdrop-blur-xl">
+    <section className="rounded-4xl border border-white/70 bg-white/90 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.07)] backdrop-blur-xl w-full">
       <div className="mb-4 flex items-center gap-3">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
           {icon}

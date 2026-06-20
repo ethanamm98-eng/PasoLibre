@@ -1,3 +1,14 @@
 {
-  "/page": "app/page.js"
+  "/about/page": "app/about/page.js",
+  "/account-manager/page": "app/account-manager/page.js",
+  "/admin-dashboard/page": "app/admin-dashboard/page.js",
+  "/admin-donations/page": "app/admin-donations/page.js",
+  "/api/admin/users/route": "app/api/admin/users/route.js",
+  "/api/event-attendance/route": "app/api/event-attendance/route.js",
+  "/attendance-report/page": "app/attendance-report/page.js",
+  "/contact/page": "app/contact/page.js",
+  "/events/page": "app/events/page.js",
+  "/initiatives/page": "app/initiatives/page.js",
+  "/page": "app/page.js",
+  "/profile/page": "app/profile/page.js"
 }
