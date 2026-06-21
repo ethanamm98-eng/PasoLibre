@@ -1,0 +1,3 @@
+{
+  "/api/admin/suspend-user/route": "app/api/admin/suspend-user/route.js"
+}

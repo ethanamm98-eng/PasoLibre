@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "functions": {
+    "/api/admin/approve-user": {},
+    "/api/admin/delete-user": {},
+    "/api/admin/deny-user": {},
+    "/api/admin/users": {},
+    "/api/contact": {},
+    "/api/event-attendance": {},
+    "/api/notify-admin": {},
+    "/api/notify-admin-mailnode": {},
+    "/api/notify-user": {},
+    "/api/pending-signups": {},
+    "/api/send-announcement-email": {},
+    "/api/send-attendance-confirmation": {},
+    "/api/send-event-invitations": {}
+  }
+}

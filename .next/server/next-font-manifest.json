@@ -1,0 +1,140 @@
+{
+  "app": {
+    "[project]/src/app/_not-found/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/about/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/account-manager/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/admin-announcements/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/admin-dashboard/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/admin-donations/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/admin-initiatives/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/analytics/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/attendance-report/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/blog/[slug]/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/blog/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/check-in/[eventId]/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/check-in/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/contact/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/content-management/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/events/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/forms/[id]/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/forms/[id]/preview/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/forms/[id]/respond/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/forms/[id]/viewForm/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/forms/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/initiatives/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/login/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/manage-community-feedback/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/manage-resources/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2",
+      "static/media/308823598d090913-s.p.df80a9b2.woff2"
+    ],
+    "[project]/src/app/privacy-policy/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/profile/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/reset-password/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/resources/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/sign-up/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/support/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ],
+    "[project]/src/app/trans-resources/page": [
+      "static/media/797e433ab948586e-s.p.29207c2f.woff2",
+      "static/media/74f465119297d0e6-s.p.0267d7bc.woff2"
+    ]
+  },
+  "appUsingSizeAdjust": true,
+  "pages": {},
+  "pagesUsingSizeAdjust": false
+}

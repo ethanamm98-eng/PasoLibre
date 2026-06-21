@@ -2,7 +2,7 @@
 import { useState } from "react";
 import ImageUpload from "./elements/ImageUpload";
 
-type LanguageKey = "en" | "es";
+export type LanguageKey = "en" | "es";
 
 type HeroImage = {
   title: string;

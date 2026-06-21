@@ -1,0 +1,6 @@
+1:"$Sreact.fragment"
+2:I[22016,["/_next/static/chunks/85928204e34bfed9.js","/_next/static/chunks/45516e3b6810a876.js","/_next/static/chunks/ce6366ff4634fa56.js","/_next/static/chunks/c0622460f3ccef69.js","/_next/static/chunks/94c4abda79281b46.js","/_next/static/chunks/43922c87e523dce9.js","/_next/static/chunks/8e26859234112358.js"],""]
+3:I[97367,["/_next/static/chunks/ff1a16fafef87110.js","/_next/static/chunks/a2dfb6fc5208ab9b.js"],"OutletBoundary"]
+4:"$Sreact.suspense"
+0:{"buildId":"3L9_cYlc8_LbNofYyFOUv","rsc":["$","$1","c",{"children":[["$","div",null,{"className":"min-h-screen flex items-center justify-center bg-white px-4","children":["$","div",null,{"className":"max-w-lg rounded-3xl border border-slate-200 bg-white p-8 shadow-xl text-center","children":[["$","h1",null,{"className":"text-2xl font-semibold text-slate-900","children":"Check-In"}],["$","p",null,{"className":"mt-3 text-slate-500","children":"Please use your invitation link to access your event check-in page."}],["$","$L2",null,{"href":"/","className":"mt-6 inline-block rounded-2xl bg-[#0d4db0] px-5 py-3 text-white","children":"Return Home"}]]}]}],[["$","script","script-0",{"src":"/_next/static/chunks/8e26859234112358.js","async":true}]],["$","$L3",null,{"children":["$","$4",null,{"name":"Next.MetadataOutlet","children":"$@5"}]}]]}],"loading":null,"isPartial":false}
+5:null
