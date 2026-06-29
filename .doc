@@ -1,0 +1,9 @@
+Bugs found testing so far
+[X] Fix login logo
+[X] Fix Account Manager Missing NEXT_PUBLIC_SUPABASE_URL
+[X] Fix Check-In page ( Crashing: Application error )
+[X] Translate Home in Mobile Navigation Background
+[ ] Verify Home Page speed
+[X] Fix assistance edit and add english event title
+[ ] Clear all home page warnings
+[ ] Check active announcements

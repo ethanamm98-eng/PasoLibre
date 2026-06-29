@@ -36,6 +36,9 @@ const translations = {
     next: "Next",
     showAll: "Show all",
     hideAll: "Hide all",
+    deleteConfirmTitle: "Delete attendance record?",
+    deleteConfirmText: "This action cannot be undone.",
+    deleteConfirmButton: "Delete",
   },
   es: {
     loadingAttendanceData: "Cargando datos de asistencia...",
@@ -57,6 +60,9 @@ const translations = {
     next: "Siguiente",
     showAll: "Mostrar todo",
     hideAll: "Ocultar todo",
+    deleteConfirmTitle: "¿Eliminar registro de asistencia?",
+    deleteConfirmText: "Esta acción no se puede deshacer.",
+    deleteConfirmButton: "Eliminar",
   },
 };
 

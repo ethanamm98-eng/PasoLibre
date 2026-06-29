@@ -1,5 +1,4 @@
 "use client";
-
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
@@ -93,19 +92,24 @@ function ActivityCard({
           {/* IMAGE */}
           <div className="relative w-full h-56 md:h-64 overflow-hidden">
             <motion.div
-              className="w-full h-full"
+              // className="w-full h-full"
               whileHover={{ scale: 1.12, rotate: 0.4 }}
               transition={{ duration: 1 }}
             >
               <Image
                 src={image?.src}
                 alt={image?.alt}
-                fill
-                className={`object-cover ${
+                width={800}
+                height={600}
+                // quality={100}
+                priority
+                // fill
+                className={`object-cover relative ${
                   image?.alt === "Running & Walking Club"
                     ? "object-[center_85%]"
                     : "object-[center_70%]"
                 }`}
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             </motion.div>
 

@@ -421,7 +421,7 @@ export default function DashboardPage() {
                         alt="Paso Libre Logo"
                         width={140}
                         height={80}
-                        className="rounded-xl object-contain m-auto scale-115"
+                        className="rounded-xl object-contain m-auto scale-160"
                       />
                     </div>
                   </div>

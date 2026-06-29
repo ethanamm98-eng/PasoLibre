@@ -7,25 +7,36 @@ import AboutPageContent from "../components/AboutPageContent";
 import FollowUs from "../components/FollowUs";
 import AboutPageMeetPlaces from "../components/MeetPlacesSection";
 import SmoothSection from "../components/SmoothSection";
+import { useRef } from "react";
+import { useScroll } from "framer-motion";
 
 export default function App() {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // const { scrollYProgress } = useScroll({
+  //   container: containerRef,
+  // });
+
   return (
-    <div>
+    <div
+      className="bg-white text-black dark:bg-black dark:text-white relative"
+      // ref={containerRef}
+    >
       <NavBar />
 
       <SmoothSection>
         <AboutPageHero />
       </SmoothSection>
 
-      <SmoothSection delay={0.1}>
+      <SmoothSection>
         <AboutPageMission />
       </SmoothSection>
 
-      <SmoothSection delay={0.2}>
+      <SmoothSection>
         <AboutPageContent />
       </SmoothSection>
 
-      <SmoothSection delay={0.3}>
+      <SmoothSection>
         <AboutPageMeetPlaces />
       </SmoothSection>
 

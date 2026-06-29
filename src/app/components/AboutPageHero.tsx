@@ -82,7 +82,10 @@ const AboutPageHero = () => {
             src={img.src}
             alt="heart"
             fill
-            className="object-cover object-bottom"
+            className="object-cover object-bottom min-w-full min-h-full rounded-full"
+            // width={112} 
+            // height={112}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         </motion.div>
       ))}
@@ -155,8 +158,11 @@ const AboutPageHero = () => {
                 src="/group/group-picture-1.webp"
                 alt="Paso Libre"
                 fill
-                className="object-cover"
+                className="object-cover min-w-full min-h-full"
                 priority
+                // width={384} 
+                // height={384}
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             </motion.div>
           </motion.div>

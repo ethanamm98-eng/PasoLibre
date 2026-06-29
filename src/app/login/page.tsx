@@ -45,9 +45,9 @@ export default async function LoginPage() {
           <div className="w-42 h-42 rounded-full overflow-hidden bg-[#0d4db0] shadow-md flex items-center justify-center border border-gray-300">
             <Link href="/">
               <Image
-                src="/logo-title-2.jpg"
+                src="/logo-title-2.png"
                 alt="Logo"
-                className="w-32 h-32 object-contain scale-120 cursor-pointer hover:scale-125 transition-transform duration-500"
+                className="w-32 h-32 object-contain scale-180 cursor-pointer hover:scale-190 transition-transform duration-500"
                 width={200}
                 height={200}
               />

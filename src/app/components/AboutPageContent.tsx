@@ -1,4 +1,5 @@
 "use client";
+
 import { useRef } from "react";
 import { motion, useScroll, useTransform, MotionValue } from "framer-motion";
 import { GoHeartFill } from "react-icons/go";
@@ -25,8 +26,10 @@ function AboutParagraph({
 
   return (
     <motion.p
+      className="relative"
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.9, delay: index * 0.3 }}
       style={{ x }}
     >
@@ -50,38 +53,38 @@ const AboutPageContent = () => {
   const { language } = useLanguage();
   const t = aboutTranslations[language].pageContent;
 
-  const containerRef = useRef(null);
+  const containerRef = useRef<HTMLElement | null>(null);
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"],
+    // layoutEffect: false,
   });
 
   return (
-    <section
+    <motion.section
       ref={containerRef}
+      layoutRoot
       className="relative about-page-content text-white bg-[#0d4db0] py-36 overflow-hidden px-6 md:px-16"
     >
-      {/* Scroll Progress Bar */}
       <motion.div
         style={{ scaleX: scrollYProgress }}
         className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-sky-400 to-indigo-400 origin-left z-50"
       />
 
-      {/* Floating Glow */}
       <motion.div
         animate={{ x: [0, 80, 0], y: [0, -60, 0] }}
         transition={{ duration: 28, repeat: Infinity }}
         className="absolute -top-40 -left-40 w-175 h-175 bg-sky-400/20 blur-[140px] rounded-full"
       />
+
       <motion.div
         animate={{ x: [0, -70, 0], y: [0, 60, 0] }}
         transition={{ duration: 30, repeat: Infinity }}
         className="absolute -bottom-40 -right-40 w-175 h-175 bg-indigo-400/20 blur-[140px] rounded-full"
       />
 
-      {/* Glass Panel */}
       <div className="relative max-w-4xl mx-auto backdrop-blur-md bg-white/5 border border-white/10 rounded-3xl px-8 md:px-16 py-14 shadow-xl">
-        {/* Handwritten Title */}
         <svg
           viewBox="0 0 700 120"
           preserveAspectRatio="xMidYMid meet"
@@ -95,13 +98,13 @@ const AboutPageContent = () => {
             className="text-[4.8rem] sm:text-[5.8rem] md:text-[7rem] lg:text-[8rem] font-black tracking-widest fill-transparent stroke-current"
             initial={{ pathLength: 0 }}
             whileInView={{ pathLength: 1 }}
+            viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 1.5 }}
           >
             {t.title}
           </motion.text>
         </svg>
 
-        {/* Paragraphs with parallax + highlight */}
         <div className="flex flex-col gap-10 text-lg md:text-xl leading-relaxed tracking-[0.01em] text-center">
           {t?.paragraphs?.map((p, i) => (
             <AboutParagraph
@@ -112,7 +115,6 @@ const AboutPageContent = () => {
             />
           ))}
 
-          {/* Signature Heart */}
           <motion.div
             animate={{ scale: [1, 1.15, 1] }}
             transition={{ duration: 2.5, repeat: Infinity }}
@@ -122,7 +124,7 @@ const AboutPageContent = () => {
           </motion.div>
         </div>
       </div>
-    </section>
+    </motion.section>
   );
 };
 

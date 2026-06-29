@@ -299,42 +299,67 @@ export default async function CheckInPage({ params, searchParams }: PageProps) {
     occurrenceDate: resolvedOccurrenceDate,
   };
 
-  let attendanceSheet = null;
-  let attendanceSheetError = null;
+let attendanceSheet = null;
+let attendanceSheetError = null;
 
-  if (resolvedOccurrenceDate) {
-    const occurrenceSheetResponse = await supabase
-      .from("attendance_sheets")
-      .select(
-        "id, title, notes, is_active, created_by, created_at, updated_at, occurrence_date"
-      )
-      .eq("event_id", safeEventId)
-      .eq("occurrence_date", resolvedOccurrenceDate)
-      .maybeSingle();
+if (resolvedOccurrenceDate) {
+  const occurrenceSheetResponse = await supabase
+    .from("attendance_sheets")
+    .select(
+      "id, title, notes, is_active, created_by, created_at, updated_at, occurrence_date"
+    )
+    .eq("event_id", safeEventId)
+    .eq("occurrence_date", resolvedOccurrenceDate)
+    .maybeSingle();
 
-    attendanceSheet = occurrenceSheetResponse.data;
-    attendanceSheetError = occurrenceSheetResponse.error;
-  }
+  attendanceSheet = occurrenceSheetResponse.data;
+  attendanceSheetError = occurrenceSheetResponse.error;
+}
 
-  if (!attendanceSheet && !attendanceSheetError) {
-    const fallbackSheetResponse = await supabase
-      .from("attendance_sheets")
-      .select(
-        "id, title, notes, is_active, created_by, created_at, updated_at, occurrence_date"
-      )
-      .eq("event_id", safeEventId)
-      .maybeSingle();
+if (attendanceSheetError) {
+  console.error("Attendance sheet load error:", {
+    message: attendanceSheetError.message,
+    details: attendanceSheetError.details,
+    hint: attendanceSheetError.hint,
+    code: attendanceSheetError.code,
+  });
+}
 
-    attendanceSheet = fallbackSheetResponse.data;
-    attendanceSheetError = fallbackSheetResponse.error;
-  }
+let participants: ParticipantRecord[] = [];
+let participantsError = null;
 
-  if (attendanceSheetError) {
-    console.error("Attendance sheet load error:", attendanceSheetError);
-  }
+if (attendanceSheet?.id) {
+  const participantsResponse = await supabase
+    .from("attendance_sheet_entries")
+    .select(
+      `
+      id,
+      participant_name,
+      participant_email,
+      participant_phone,
+      checked_in,
+      checked_in_at,
+      status,
+      member_id,
+      occurrence_date
+    `
+    )
+    .eq("attendance_sheet_id", attendanceSheet.id)
+    .eq("occurrence_date", resolvedOccurrenceDate)
+    .order("created_at", { ascending: false });
 
-  let participants: ParticipantRecord[] = [];
-  let participantsError = null;
+  participants = participantsResponse.data || [];
+  participantsError = participantsResponse.error;
+}
+
+if (participantsError) {
+  console.error("Participants load error:", {
+    message: participantsError.message,
+    details: participantsError.details,
+    hint: participantsError.hint,
+    code: participantsError.code,
+  });
+}
 
   if (attendanceSheet?.id) {
     let participantsQuery = supabase

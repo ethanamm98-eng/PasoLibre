@@ -28,12 +28,12 @@ export default function AboutSocialCommunitySection() {
 
   const videos = useMemo(
     () => ["7623910862838943007", "7616444030641114399", "7609031445171997983"],
-    []
+    [],
   );
 
   const whatsappChatMessage = useMemo(
     () => "Hola Cori <3 Nos vemos mañana en el Running & Walking Club.",
-    []
+    [],
   );
 
   const particles = useMemo(
@@ -43,13 +43,14 @@ export default function AboutSocialCommunitySection() {
       { x: 760, y: 180 },
       { x: 980, y: 420 },
     ],
-    []
+    [],
   );
 
   const [index, setIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
   const [typedInputMessage, setTypedInputMessage] = useState("");
   const [hasSentWhatsappMessage, setHasSentWhatsappMessage] = useState(false);
+  const [hasLoadedTikTokPlayer, setHasLoadedTikTokPlayer] = useState(false);
 
   useEffect(() => {
     let currentIndex = 0;
@@ -543,21 +544,25 @@ export default function AboutSocialCommunitySection() {
                       </div>
 
                       <div className="absolute inset-0 overflow-hidden rounded-[3rem] bg-black">
-                        <AnimatePresence mode="wait">
-                          <motion.iframe
-                            key={videos[index]}
-                            src={`https://www.tiktok.com/player/v1/${videos[index]}?autoplay=1&mute=1&controls=0&description=0`}
-                            className="absolute inset-0 my-auto h-[85%] w-full"
-                            allow="autoplay; encrypted-media"
-                            initial={{ y: 110, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            exit={{ y: -110, opacity: 0 }}
-                            transition={{
-                              duration: 0.55,
-                              ease: [0.22, 1, 0.36, 1],
-                            }}
-                          />
-                        </AnimatePresence>
+<AnimatePresence mode="wait">
+  <motion.iframe
+    key={videos[index]}
+    src={`https://www.tiktok.com/player/v1/${videos[index]}?autoplay=0&mute=0&controls=1&description=0`}
+    title={`Paso Libre TikTok video ${index + 1}`}
+    className="absolute inset-0 my-auto h-[85%] w-full border-0"
+    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+    allowFullScreen
+    loading="lazy"
+    referrerPolicy="strict-origin-when-cross-origin"
+    initial={{ y: 110, opacity: 0 }}
+    animate={{ y: 0, opacity: 1 }}
+    exit={{ y: -110, opacity: 0 }}
+    transition={{
+      duration: 0.55,
+      ease: [0.22, 1, 0.36, 1],
+    }}
+  />
+</AnimatePresence>
 
                         <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-24 bg-linear-to-b from-black/35 to-transparent" />
                         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-28 bg-linear-to-t from-black/30 to-transparent" />

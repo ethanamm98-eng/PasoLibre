@@ -161,6 +161,9 @@ const attendanceReportCopy: Record<
       no_show: "No Show",
       cancelled: "Cancelled",
     },
+    // deleteSuccessTitle: "Successfully deleted",
+    // deleteSuccessText:
+    //   "The attendance record entry was successfully deleted from the selected event date.",
   },
   es: {
     loadingTitle: "Cargando registros de asistencia",
@@ -216,6 +219,9 @@ const attendanceReportCopy: Record<
       no_show: "No Asistió",
       cancelled: "Cancelado",
     },
+    // deleteSuccessTitle: "Eliminado correctamente",
+    // deleteSuccessText:
+    //   "El registro de asistencia se eliminó correctamente de la fecha de evento seleccionada.",
   },
 };
 

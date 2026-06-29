@@ -120,7 +120,7 @@ const AddAttendanceRecordModal = ({
   loadAttendanceData,
   setSaving,
 }: {
-  events: { id: string; name_en: string }[];
+  events: { id: string; name_en: string; name_es: string }[];
   selectedEventDetails: { date: string; time: string; location: string } | null;
   attendanceForm: {
     eventId: string;
@@ -441,7 +441,7 @@ const AddAttendanceRecordModal = ({
                     { value: "", label: t.selectEvent },
                     ...events.map((event) => ({
                       value: event.id,
-                      label: event.name_en,
+                      label: language === "es" ? event.name_es : event.name_en,
                     })),
                   ]}
                 />

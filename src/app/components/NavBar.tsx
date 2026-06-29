@@ -445,7 +445,7 @@ export default function Navbar() {
                   className="flex items-center gap-3 border-b border-white/10 py-2"
                 >
                   <FiHome className="text-sky-200" />
-                  home
+                  {t?.navigation?.home || "home"}
                 </Link>
               </li>
 
