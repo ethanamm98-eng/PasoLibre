@@ -1,4 +1,6 @@
 {
-  "/about/page": "app/about/page.js",
+  "/account-manager/page": "app/account-manager/page.js",
+  "/admin-dashboard/page": "app/admin-dashboard/page.js",
+  "/api/admin/users/route": "app/api/admin/users/route.js",
   "/page": "app/page.js"
 }
