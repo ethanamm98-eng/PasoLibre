@@ -31,7 +31,6 @@ type DropdownPosition = {
 };
 
 type DragState = {
-  pointerId: number;
   startPointerX: number;
   startPointerY: number;
   startLeft: number;
@@ -67,6 +66,7 @@ export default function EventAttendanceDropdown({
 
   const ref = useRef<HTMLDivElement>(null);
   const dragStateRef = useRef<DragState | null>(null);
+
   const router = useRouter();
 
   const [displayName, setDisplayName] = useState(t.guest);
@@ -74,6 +74,7 @@ export default function EventAttendanceDropdown({
   const [loadingUser, setLoadingUser] = useState(true);
   const [removingAttendance, setRemovingAttendance] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+
   const [position, setPosition] = useState<DropdownPosition>({
     top: 12,
     left: 12,
@@ -206,6 +207,56 @@ export default function EventAttendanceDropdown({
     };
   }, [t.guest, t.user]);
 
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handlePointerMove = (e: PointerEvent) => {
+      const dragState = dragStateRef.current;
+
+      if (!dragState) return;
+
+      const dropdownWidth = ref.current?.offsetWidth || 320;
+      const dropdownHeight = ref.current?.offsetHeight || 0;
+      const viewportPadding = 12;
+
+      const deltaX = e.clientX - dragState.startPointerX;
+      const deltaY = e.clientY - dragState.startPointerY;
+
+      const nextLeft = dragState.startLeft + deltaX;
+      const nextTop = dragState.startTop + deltaY;
+
+      const maxLeft = Math.max(
+        viewportPadding,
+        window.innerWidth - dropdownWidth - viewportPadding
+      );
+
+      const maxTop = Math.max(
+        viewportPadding,
+        window.innerHeight - dropdownHeight - viewportPadding
+      );
+
+      setPosition({
+        left: Math.min(Math.max(nextLeft, viewportPadding), maxLeft),
+        top: Math.min(Math.max(nextTop, viewportPadding), maxTop),
+      });
+    };
+
+    const handlePointerUp = () => {
+      dragStateRef.current = null;
+      setIsDragging(false);
+    };
+
+    document.addEventListener("pointermove", handlePointerMove);
+    document.addEventListener("pointerup", handlePointerUp);
+    document.addEventListener("pointercancel", handlePointerUp);
+
+    return () => {
+      document.removeEventListener("pointermove", handlePointerMove);
+      document.removeEventListener("pointerup", handlePointerUp);
+      document.removeEventListener("pointercancel", handlePointerUp);
+    };
+  }, [isDragging]);
+
   const handleDragStart = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0) return;
 
@@ -214,69 +265,21 @@ export default function EventAttendanceDropdown({
     if (
       target.closest("button") ||
       target.closest("a") ||
-      target.closest('[role="button"]')
+      target.closest("[data-no-drag]")
     ) {
       return;
     }
 
+    e.preventDefault();
+
     dragStateRef.current = {
-      pointerId: e.pointerId,
       startPointerX: e.clientX,
       startPointerY: e.clientY,
       startLeft: position.left,
       startTop: position.top,
     };
 
-    e.currentTarget.setPointerCapture(e.pointerId);
     setIsDragging(true);
-  };
-
-  const handleDragMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    const dragState = dragStateRef.current;
-
-    if (!dragState || dragState.pointerId !== e.pointerId) {
-      return;
-    }
-
-    const dropdownWidth = ref.current?.offsetWidth || 320;
-    const dropdownHeight = ref.current?.offsetHeight || 0;
-    const viewportPadding = 12;
-
-    const deltaX = e.clientX - dragState.startPointerX;
-    const deltaY = e.clientY - dragState.startPointerY;
-
-    const nextLeft = dragState.startLeft + deltaX;
-    const nextTop = dragState.startTop + deltaY;
-
-    const maxLeft = Math.max(
-      viewportPadding,
-      window.innerWidth - dropdownWidth - viewportPadding
-    );
-
-    const maxTop = Math.max(
-      viewportPadding,
-      window.innerHeight - dropdownHeight - viewportPadding
-    );
-
-    setPosition({
-      left: Math.min(Math.max(nextLeft, viewportPadding), maxLeft),
-      top: Math.min(Math.max(nextTop, viewportPadding), maxTop),
-    });
-  };
-
-  const handleDragEnd = (e: React.PointerEvent<HTMLDivElement>) => {
-    const dragState = dragStateRef.current;
-
-    if (!dragState || dragState.pointerId !== e.pointerId) {
-      return;
-    }
-
-    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
-      e.currentTarget.releasePointerCapture(e.pointerId);
-    }
-
-    dragStateRef.current = null;
-    setIsDragging(false);
   };
 
   const handleRemoveAttendance = async () => {
@@ -338,9 +341,6 @@ export default function EventAttendanceDropdown({
     >
       <div
         onPointerDown={handleDragStart}
-        onPointerMove={handleDragMove}
-        onPointerUp={handleDragEnd}
-        onPointerCancel={handleDragEnd}
         className={`flex touch-none select-none items-center justify-between border-b border-slate-100 px-4 py-3 ${
           isDragging ? "cursor-grabbing" : "cursor-grab"
         }`}
@@ -353,6 +353,8 @@ export default function EventAttendanceDropdown({
           <p className="mr-3 text-xs text-slate-500">
             {t.confirmAttendanceText}{" "}
             <span
+              data-no-drag
+              onPointerDown={(e) => e.stopPropagation()}
               onClick={() => router.push(checkInHref)}
               className="cursor-pointer text-blue-600 transition duration-300 hover:underline"
             >
@@ -369,6 +371,8 @@ export default function EventAttendanceDropdown({
 
         <button
           type="button"
+          data-no-drag
+          onPointerDown={(e) => e.stopPropagation()}
           onClick={onClose}
           className="cursor-pointer text-slate-400 transition duration-300 hover:text-red-600"
           aria-label={isSpanish ? "Cerrar" : "Close"}
@@ -403,6 +407,7 @@ export default function EventAttendanceDropdown({
         {!event?.userHasConfirmed ? (
           <button
             type="button"
+            onPointerDown={(e) => e.stopPropagation()}
             onClick={() => onConfirm(event, "accepted")}
             disabled={loadingUser}
             className="flex cursor-pointer items-center gap-3 rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-700 transition disabled:cursor-not-allowed disabled:opacity-60"
@@ -413,6 +418,7 @@ export default function EventAttendanceDropdown({
         ) : (
           <button
             type="button"
+            onPointerDown={(e) => e.stopPropagation()}
             onClick={handleRemoveAttendance}
             disabled={removingAttendance}
             className="flex cursor-pointer items-center gap-3 rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700 transition disabled:cursor-not-allowed disabled:opacity-60"
@@ -425,4 +431,3 @@ export default function EventAttendanceDropdown({
     </div>
   );
 }
-
