@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FiCheckCircle, FiXCircle, FiX } from "react-icons/fi";
@@ -22,6 +23,19 @@ type ProfileData = {
   first_name?: string | null;
   last_name?: string | null;
   email?: string | null;
+};
+
+type DropdownPosition = {
+  top: number;
+  left: number;
+};
+
+type DragState = {
+  pointerId: number;
+  startPointerX: number;
+  startPointerY: number;
+  startLeft: number;
+  startTop: number;
 };
 
 export default function EventAttendanceDropdown({
@@ -52,12 +66,18 @@ export default function EventAttendanceDropdown({
   };
 
   const ref = useRef<HTMLDivElement>(null);
+  const dragStateRef = useRef<DragState | null>(null);
   const router = useRouter();
 
   const [displayName, setDisplayName] = useState(t.guest);
   const [displayEmail, setDisplayEmail] = useState("");
   const [loadingUser, setLoadingUser] = useState(true);
   const [removingAttendance, setRemovingAttendance] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [position, setPosition] = useState<DropdownPosition>({
+    top: 12,
+    left: 12,
+  });
 
   const eventName =
     language === "es"
@@ -73,15 +93,48 @@ export default function EventAttendanceDropdown({
   }`;
 
   useEffect(() => {
+    if (!anchorRect) return;
+
+    const dropdownWidth = 320;
+    const gap = 12;
+    const viewportPadding = 12;
+
+    let top = anchorRect.top;
+    let left = anchorRect.right + gap;
+
+    if (left + dropdownWidth > window.innerWidth - viewportPadding) {
+      left = anchorRect.left - dropdownWidth - gap;
+    }
+
+    if (left < viewportPadding) {
+      left = viewportPadding;
+    }
+
+    if (top < viewportPadding) {
+      top = viewportPadding;
+    }
+
+    setPosition({
+      top,
+      left,
+    });
+  }, [anchorRect]);
+
+  useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
+      if (isDragging) return;
+
       if (ref.current && !ref.current.contains(e.target as Node)) {
         onClose();
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [onClose]);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isDragging, onClose]);
 
   useEffect(() => {
     let mounted = true;
@@ -127,6 +180,7 @@ export default function EventAttendanceDropdown({
         setDisplayEmail(profile.email || fallbackEmail);
       } catch (error) {
         console.error("Dropdown auth load error:", error);
+
         if (mounted) {
           setDisplayName(t.guest);
           setDisplayEmail("");
@@ -151,6 +205,79 @@ export default function EventAttendanceDropdown({
       subscription.unsubscribe();
     };
   }, [t.guest, t.user]);
+
+  const handleDragStart = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return;
+
+    const target = e.target as HTMLElement;
+
+    if (
+      target.closest("button") ||
+      target.closest("a") ||
+      target.closest('[role="button"]')
+    ) {
+      return;
+    }
+
+    dragStateRef.current = {
+      pointerId: e.pointerId,
+      startPointerX: e.clientX,
+      startPointerY: e.clientY,
+      startLeft: position.left,
+      startTop: position.top,
+    };
+
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setIsDragging(true);
+  };
+
+  const handleDragMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const dragState = dragStateRef.current;
+
+    if (!dragState || dragState.pointerId !== e.pointerId) {
+      return;
+    }
+
+    const dropdownWidth = ref.current?.offsetWidth || 320;
+    const dropdownHeight = ref.current?.offsetHeight || 0;
+    const viewportPadding = 12;
+
+    const deltaX = e.clientX - dragState.startPointerX;
+    const deltaY = e.clientY - dragState.startPointerY;
+
+    const nextLeft = dragState.startLeft + deltaX;
+    const nextTop = dragState.startTop + deltaY;
+
+    const maxLeft = Math.max(
+      viewportPadding,
+      window.innerWidth - dropdownWidth - viewportPadding
+    );
+
+    const maxTop = Math.max(
+      viewportPadding,
+      window.innerHeight - dropdownHeight - viewportPadding
+    );
+
+    setPosition({
+      left: Math.min(Math.max(nextLeft, viewportPadding), maxLeft),
+      top: Math.min(Math.max(nextTop, viewportPadding), maxTop),
+    });
+  };
+
+  const handleDragEnd = (e: React.PointerEvent<HTMLDivElement>) => {
+    const dragState = dragStateRef.current;
+
+    if (!dragState || dragState.pointerId !== e.pointerId) {
+      return;
+    }
+
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
+
+    dragStateRef.current = null;
+    setIsDragging(false);
+  };
 
   const handleRemoveAttendance = async () => {
     try {
@@ -200,26 +327,24 @@ export default function EventAttendanceDropdown({
 
   const avatarLetter = displayName.charAt(0).toUpperCase();
 
-  const dropdownWidth = 320;
-  const gap = 12;
-
-  let top = anchorRect.top;
-  let left = anchorRect.right + gap;
-
-  if (left + dropdownWidth > window.innerWidth - 12) {
-    left = anchorRect.left - dropdownWidth - gap;
-  }
-
-  if (left < 12) left = 12;
-  if (top < 12) top = 12;
-
   return (
     <div
       ref={ref}
-      className="fixed z-9999 w-80 rounded-2xl border border-slate-200 bg-white shadow-2xl animate-fade-in hidden md:block"
-      style={{ top, left }}
+      className="fixed z-9999 hidden w-80 rounded-2xl border border-slate-200 bg-white shadow-2xl animate-fade-in md:block"
+      style={{
+        top: position.top,
+        left: position.left,
+      }}
     >
-      <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+      <div
+        onPointerDown={handleDragStart}
+        onPointerMove={handleDragMove}
+        onPointerUp={handleDragEnd}
+        onPointerCancel={handleDragEnd}
+        className={`flex touch-none select-none items-center justify-between border-b border-slate-100 px-4 py-3 ${
+          isDragging ? "cursor-grabbing" : "cursor-grab"
+        }`}
+      >
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-slate-900">
             {eventName}
@@ -243,8 +368,10 @@ export default function EventAttendanceDropdown({
         </div>
 
         <button
+          type="button"
           onClick={onClose}
           className="cursor-pointer text-slate-400 transition duration-300 hover:text-red-600"
+          aria-label={isSpanish ? "Cerrar" : "Close"}
         >
           <FiX />
         </button>
@@ -259,9 +386,11 @@ export default function EventAttendanceDropdown({
           <span className="text-[11px] uppercase tracking-wide text-slate-400">
             {t.signedInAs}
           </span>
+
           <span className="truncate text-sm font-medium text-slate-800">
             {loadingUser ? t.loading : displayName}
           </span>
+
           {!!displayEmail && !loadingUser && (
             <span className="truncate text-xs text-slate-500">
               {displayEmail}
@@ -273,18 +402,20 @@ export default function EventAttendanceDropdown({
       <div className="flex flex-col gap-1 p-2">
         {!event?.userHasConfirmed ? (
           <button
+            type="button"
             onClick={() => onConfirm(event, "accepted")}
             disabled={loadingUser}
-            className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-emerald-700 transition bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+            className="flex cursor-pointer items-center gap-3 rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-700 transition disabled:cursor-not-allowed disabled:opacity-60"
           >
             <FiCheckCircle className="text-lg" />
             {t.confirmAttend}
           </button>
         ) : (
           <button
+            type="button"
             onClick={handleRemoveAttendance}
             disabled={removingAttendance}
-            className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-rose-700 transition bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+            className="flex cursor-pointer items-center gap-3 rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700 transition disabled:cursor-not-allowed disabled:opacity-60"
           >
             <FiXCircle className="text-lg" />
             {removingAttendance ? t.cancelling : t.cancelAttendance}
@@ -294,3 +425,4 @@ export default function EventAttendanceDropdown({
     </div>
   );
 }
+

@@ -187,7 +187,7 @@ const attendanceReportCopy: Record<
     selectedEventFallback: "Evento Seleccionado",
     exportCsv: "Exportar CSV",
     exportPdf: "Exportar PDF",
-    analytics: "Estadíticas",
+    analytics: "Estadísticas",
     addRecord: "Añadir Registro",
     searchPlaceholder: "Buscar por participante...",
     recordsHelper:
@@ -226,7 +226,7 @@ const attendanceReportCopy: Record<
 };
 
 function AdminAttendancePageContent() {
-    const { language } = useLanguage(); // es or en
+  const { language } = useLanguage(); // es or en
   const lang = getLanguageKey(language);
   const t = attendanceReportCopy[lang];
   const router = useRouter();
@@ -1112,7 +1112,6 @@ function AdminAttendancePageContent() {
     </>
   );
 }
-
 
 export default function AdminAttendancePage() {
   return (
