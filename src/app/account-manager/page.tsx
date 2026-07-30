@@ -261,7 +261,7 @@ const getLocalizedUserRole = (
   const isSpanish = language === "es";
 
   if (role === "super_admin") {
-    return isSpanish ? "Superadministrador" : "Super Admin";
+    return isSpanish ? "Super Administrador" : "Super Admin";
   }
 
   if (role === "admin") {
