@@ -1,13 +1,42 @@
 "use client";
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-import { FaMapMarkerAlt, FaCalendarAlt, FaGift } from "react-icons/fa";
+import {
+  FaMapMarkerAlt,
+  FaCalendarAlt,
+  FaGift,
+} from "react-icons/fa";
 
 import { supabase } from "../lib/supabase/supabaseClient";
 import { useLanguage } from "../context/language";
+
+type InitiativeType =
+  | "event"
+  | "grant"
+  | "info"
+  | "program"
+  | "resource"
+  | "announcement";
+
+type InitiativeSourceType = "event" | "custom";
+
+type LinkedEventRecord = {
+  id: string;
+  date: string | null;
+  time: string | null;
+  schedule_type: "one-time" | "recurrent" | string | null;
+  recurrence: string | null;
+  days_of_week_csv: string | null;
+  day_of_month: number | null;
+  month: number | null;
+  months_csv: string | null;
+  recurrence_excluded_dates: string[] | null;
+  created_at: string | null;
+};
 
 type InitiativeRecord = {
   id: string;
@@ -17,8 +46,8 @@ type InitiativeRecord = {
   description: string;
   description_en?: string | null;
   description_es?: string | null;
-  type: "event" | "grant" | "info" | "program" | "resource" | "announcement";
-  source_type: "event" | "custom";
+  type: InitiativeType;
+  source_type: InitiativeSourceType;
   linked_event_id: string | null;
   location: string | null;
   time_label: string | null;
@@ -33,6 +62,413 @@ type InitiativeRecord = {
   sort_order: number;
   created_at: string;
   image_position_y: number | null;
+
+  linkedEvent?: LinkedEventRecord | null;
+};
+
+const normalizeValue = (value?: string | null) =>
+  String(value || "")
+    .trim()
+    .toLowerCase();
+
+const normalizeCsvValues = (value?: string | null) =>
+  String(value || "")
+    .split(",")
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean);
+
+const startOfLocalDay = (date: Date) =>
+  new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate()
+  );
+
+const addLocalDays = (date: Date, amount: number) =>
+  new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate() + amount
+  );
+
+const toLocalDateKey = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
+const parseLocalDate = (
+  value?: string | Date | null
+): Date | null => {
+  if (!value) return null;
+
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) return null;
+
+    return startOfLocalDay(value);
+  }
+
+  const normalized = String(value).trim();
+
+  if (!normalized) return null;
+
+  /*
+   * YYYY-MM-DD is parsed as UTC by JavaScript.
+   * Appending T00:00:00 keeps the date local and prevents
+   * Puerto Rico from displaying the previous day.
+   */
+  const parsed = new Date(
+    normalized.includes("T")
+      ? normalized
+      : `${normalized}T00:00:00`
+  );
+
+  if (Number.isNaN(parsed.getTime())) return null;
+
+  return startOfLocalDay(parsed);
+};
+
+const getCandidateWeekdayValues = (candidate: Date) => {
+  const fullName = new Intl.DateTimeFormat("en-US", {
+    weekday: "long",
+  })
+    .format(candidate)
+    .toLowerCase();
+
+  const shortName = new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+  })
+    .format(candidate)
+    .toLowerCase();
+
+  const dayIndex = candidate.getDay();
+
+  return [
+    fullName,
+    shortName,
+    shortName.slice(0, 3),
+    String(dayIndex),
+    String(dayIndex + 1),
+  ];
+};
+
+const getCandidateMonthValues = (candidate: Date) => {
+  const fullMonth = new Intl.DateTimeFormat("en-US", {
+    month: "long",
+  })
+    .format(candidate)
+    .toLowerCase();
+
+  const shortMonth = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+  })
+    .format(candidate)
+    .toLowerCase();
+
+  const monthNumber = candidate.getMonth() + 1;
+
+  return [
+    String(monthNumber),
+    String(monthNumber).padStart(2, "0"),
+    fullMonth,
+    shortMonth,
+  ];
+};
+
+const recurringEventOccursOnDate = (
+  event: LinkedEventRecord,
+  candidate: Date
+) => {
+  const recurrence = normalizeValue(
+    event.recurrence || "weekly"
+  );
+
+  const configuredDays = normalizeCsvValues(
+    event.days_of_week_csv
+  );
+
+  const configuredMonths = normalizeCsvValues(
+    event.months_csv
+  );
+
+  const configuredDayOfMonth = Number(
+    event.day_of_month || 0
+  );
+
+  const configuredMonth = Number(event.month || 0);
+
+  const candidateDayOfMonth = candidate.getDate();
+  const candidateMonth = candidate.getMonth() + 1;
+
+  if (recurrence === "daily") {
+    return true;
+  }
+
+  if (recurrence === "weekly") {
+    /*
+     * Empty weekday configuration means every day.
+     */
+    if (configuredDays.length === 0) {
+      return true;
+    }
+
+    const candidateWeekdays =
+      getCandidateWeekdayValues(candidate);
+
+    return configuredDays.some((day) =>
+      candidateWeekdays.includes(day)
+    );
+  }
+
+  if (
+    recurrence === "monthly" ||
+    recurrence === "selectedmonth" ||
+    recurrence === "selected-month"
+  ) {
+    const matchesDay =
+      !configuredDayOfMonth ||
+      candidateDayOfMonth === configuredDayOfMonth;
+
+    if (!matchesDay) return false;
+
+    /*
+     * No selected months means every month.
+     */
+    if (configuredMonths.length === 0) {
+      return true;
+    }
+
+    const candidateMonths =
+      getCandidateMonthValues(candidate);
+
+    return configuredMonths.some((month) =>
+      candidateMonths.includes(month)
+    );
+  }
+
+  if (recurrence === "yearly") {
+    const candidateMonths =
+      getCandidateMonthValues(candidate);
+
+    const matchesConfiguredMonth =
+      !configuredMonth ||
+      candidateMonth === configuredMonth;
+
+    const matchesSelectedMonths =
+      configuredMonths.length === 0 ||
+      configuredMonths.some((month) =>
+        candidateMonths.includes(month)
+      );
+
+    const matchesDay =
+      !configuredDayOfMonth ||
+      candidateDayOfMonth === configuredDayOfMonth;
+
+    return (
+      matchesConfiguredMonth &&
+      matchesSelectedMonths &&
+      matchesDay
+    );
+  }
+
+  return false;
+};
+
+const getExcludedDates = (
+  event: LinkedEventRecord
+) => {
+  if (!Array.isArray(event.recurrence_excluded_dates)) {
+    return new Set<string>();
+  }
+
+  return new Set(
+    event.recurrence_excluded_dates
+      .map((date) => String(date).split("T")[0])
+      .filter(Boolean)
+  );
+};
+
+const getNextOccurrenceDate = (
+  event?: LinkedEventRecord | null
+) => {
+  if (!event) return null;
+
+  const scheduleType = normalizeValue(event.schedule_type);
+
+  if (scheduleType !== "recurrent") {
+    return event.date
+      ? String(event.date).split("T")[0]
+      : null;
+  }
+
+  const today = startOfLocalDay(new Date());
+
+  const configuredStartDate =
+    parseLocalDate(event.date) ||
+    parseLocalDate(event.created_at) ||
+    today;
+
+  let candidate =
+    configuredStartDate > today
+      ? configuredStartDate
+      : today;
+
+  const excludedDates = getExcludedDates(event);
+
+  /*
+   * Five years covers yearly recurrences even when
+   * this year's occurrence has already passed.
+   */
+  const maximumSearchDays = 366 * 5;
+
+  for (
+    let index = 0;
+    index <= maximumSearchDays;
+    index += 1
+  ) {
+    const candidateKey = toLocalDateKey(candidate);
+
+    const occursOnDate = recurringEventOccursOnDate(
+      event,
+      candidate
+    );
+
+    const isExcluded =
+      excludedDates.has(candidateKey);
+
+    if (occursOnDate && !isExcluded) {
+      return candidateKey;
+    }
+
+    candidate = addLocalDays(candidate, 1);
+  }
+
+  return null;
+};
+
+const formatTimeToAmPm = (
+  value?: string | null
+) => {
+  if (!value) return "";
+
+  /*
+   * Supports:
+   * 08:00
+   * 08:00:00
+   * 18:30:00
+   * 2026-08-02T18:30:00
+   */
+  const rawValue = String(value).trim();
+
+  const timeSection = rawValue.includes("T")
+    ? rawValue.split("T")[1] || ""
+    : rawValue;
+
+  const cleanTime = timeSection
+    .replace(/Z$/i, "")
+    .replace(/([+-]\d{2}:\d{2})$/, "");
+
+  const [hoursValue, minutesValue] =
+    cleanTime.split(":");
+
+  const hours = Number(hoursValue);
+  const minutes = Number(minutesValue);
+
+  if (
+    Number.isNaN(hours) ||
+    Number.isNaN(minutes) ||
+    hours < 0 ||
+    hours > 23 ||
+    minutes < 0 ||
+    minutes > 59
+  ) {
+    return rawValue;
+  }
+
+  const suffix = hours >= 12 ? "PM" : "AM";
+  const formattedHours = hours % 12 || 12;
+  const formattedMinutes = String(minutes).padStart(
+    2,
+    "0"
+  );
+
+  return `${formattedHours}:${formattedMinutes} ${suffix}`;
+};
+
+const formatDateAndTime = ({
+  date,
+  time,
+  isSpanish,
+}: {
+  date?: string | null;
+  time?: string | null;
+  isSpanish: boolean;
+}) => {
+  const parsedDate = parseLocalDate(date);
+
+  if (!parsedDate) return "";
+
+  const formattedDate = new Intl.DateTimeFormat(
+    isSpanish ? "es-PR" : "en-US",
+    {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    }
+  ).format(parsedDate);
+
+  const formattedTime = formatTimeToAmPm(time);
+
+  return formattedTime
+    ? `${formattedDate} • ${formattedTime}`
+    : formattedDate;
+};
+
+const formatLegacyTimeLabel = ({
+  value,
+  isSpanish,
+}: {
+  value?: string | null;
+  isSpanish: boolean;
+}) => {
+  if (!value) return "";
+
+  const normalized = String(value).trim();
+
+  /*
+   * Expected legacy format:
+   * 2026-08-02 • 18:30:00
+   */
+  const separatorMatch = normalized.includes(" • ")
+    ? " • "
+    : normalized.includes("|")
+      ? "|"
+      : null;
+
+  if (!separatorMatch) {
+    /*
+     * If only a military time was stored, format it.
+     */
+    if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(normalized)) {
+      return formatTimeToAmPm(normalized);
+    }
+
+    return normalized;
+  }
+
+  const [datePart, timePart] =
+    normalized.split(separatorMatch);
+
+  if (!datePart) return normalized;
+
+  return formatDateAndTime({
+    date: datePart.trim(),
+    time: timePart?.trim() || null,
+    isSpanish,
+  });
 };
 
 function EventRow({
@@ -42,22 +478,37 @@ function EventRow({
   event: InitiativeRecord;
   index: number;
 }) {
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
   const { language } = useLanguage();
+
   const isSpanish = language === "es";
 
   const t = {
     featured: isSpanish ? "Destacado" : "Featured",
-    suggestedDonation: isSpanish ? "Donativo sugerido:" : "Suggested donation:",
-    moreInformation: isSpanish ? "Más información" : "More Information",
+
+    suggestedDonation: isSpanish
+      ? "Donativo sugerido:"
+      : "Suggested donation:",
+
+    moreInformation: isSpanish
+      ? "Más información"
+      : "More Information",
+
     tbd: isSpanish ? "Por confirmar" : "TBD",
     event: isSpanish ? "Evento" : "Event",
     grant: isSpanish ? "Subvención" : "Grant",
     info: isSpanish ? "Información" : "Info",
     program: isSpanish ? "Programa" : "Program",
     resource: isSpanish ? "Recurso" : "Resource",
-    announcement: isSpanish ? "Anuncio" : "Announcement",
+
+    announcement: isSpanish
+      ? "Anuncio"
+      : "Announcement",
+
+    nextOccurrence: isSpanish
+      ? "Próxima ocurrencia"
+      : "Next occurrence",
   };
 
   const getTypeLabel = (type?: string) => {
@@ -78,17 +529,28 @@ function EventRow({
   ) => {
     const preferred =
       language === "es"
-        ? event[`${field}_es` as keyof InitiativeRecord]
-        : event[`${field}_en` as keyof InitiativeRecord];
+        ? event[
+            `${field}_es` as keyof InitiativeRecord
+          ]
+        : event[
+            `${field}_en` as keyof InitiativeRecord
+          ];
 
     const fallback =
       language === "es"
-        ? event[`${field}_en` as keyof InitiativeRecord]
-        : event[`${field}_es` as keyof InitiativeRecord];
+        ? event[
+            `${field}_en` as keyof InitiativeRecord
+          ]
+        : event[
+            `${field}_es` as keyof InitiativeRecord
+          ];
 
-    const legacy = event[field as keyof InitiativeRecord];
+    const legacy =
+      event[field as keyof InitiativeRecord];
 
-    return String(preferred || fallback || legacy || "");
+    return String(
+      preferred || fallback || legacy || ""
+    );
   };
 
   const scrollData = useScroll({
@@ -99,15 +561,65 @@ function EventRow({
   const y = useTransform(
     scrollData.scrollYProgress,
     [0, 1],
-    index % 2 === 0 ? [40, -40] : [-40, 40]
+    index % 2 === 0
+      ? [40, -40]
+      : [-40, 40]
   );
 
   const isReverse = index % 2 !== 0;
   const isBlueCard = index % 2 !== 0;
 
   const title = getLocalizedValue("title");
-  const description = getLocalizedValue("description");
-  const ctaLabel = getLocalizedValue("cta_label") || t.moreInformation;
+  const description =
+    getLocalizedValue("description");
+
+  const ctaLabel =
+    getLocalizedValue("cta_label") ||
+    t.moreInformation;
+
+  const eventScheduleLabel = useMemo(() => {
+    const linkedEvent = event.linkedEvent;
+
+    if (
+      event.source_type === "event" &&
+      linkedEvent
+    ) {
+      const occurrenceDate =
+        getNextOccurrenceDate(linkedEvent);
+
+      if (!occurrenceDate) {
+        return event.time_label
+          ? formatLegacyTimeLabel({
+              value: event.time_label,
+              isSpanish,
+            })
+          : t.tbd;
+      }
+
+      return formatDateAndTime({
+        date: occurrenceDate,
+        time: linkedEvent.time,
+        isSpanish,
+      });
+    }
+
+    return formatLegacyTimeLabel({
+      value: event.time_label,
+      isSpanish,
+    });
+  }, [
+    event.linkedEvent,
+    event.source_type,
+    event.time_label,
+    isSpanish,
+    t.tbd,
+  ]);
+
+  const isRecurringEvent =
+    event.source_type === "event" &&
+    normalizeValue(
+      event.linkedEvent?.schedule_type
+    ) === "recurrent";
 
   const handleNavigate = () => {
     if (event.cta_url) {
@@ -116,41 +628,30 @@ function EventRow({
     }
 
     if (event.type === "event") {
-      router.push("/check-in/" + event.id);
+      const targetEventId =
+        event.linked_event_id ||
+        event.linkedEvent?.id ||
+        event.id;
+
+      const occurrenceDate =
+        getNextOccurrenceDate(event.linkedEvent);
+
+      const query = occurrenceDate
+        ? `?occurrenceDate=${encodeURIComponent(
+            occurrenceDate
+          )}`
+        : "";
+
+      router.push(
+        `/check-in/${targetEventId}${query}`
+      );
+
       return;
     }
 
     router.push(`/initiatives/${event.id}`);
   };
 
-  const formattedDate = useMemo(() => {
-    if (!event.time_label) return "";
-  
-    try {
-      const [datePart, timePart] = event.time_label.split(" • ");
-  
-      if (!datePart || !timePart) return event.time_label;
-  
-      const date = new Date(`${datePart}T${timePart}`);
-  
-      if (Number.isNaN(date.getTime())) return event.time_label;
-  
-      return new Intl.DateTimeFormat(
-        isSpanish ? "es-PR" : "en-US",
-        {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-        }
-      ).format(date);
-    } catch {
-      return event.time_label;
-    }
-  }, [event.time_label, isSpanish]);
-  
   return (
     <motion.div
       ref={ref}
@@ -169,7 +670,7 @@ function EventRow({
         }`}
       >
         <div
-          className={`absolute inset-0 pointer-events-none ${
+          className={`pointer-events-none absolute inset-0 ${
             isBlueCard
               ? "bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.22),transparent_32%)]"
               : "bg-[radial-gradient(circle_at_top_right,rgba(13,77,176,0.08),transparent_32%)]"
@@ -177,7 +678,7 @@ function EventRow({
         />
 
         <div
-          className={`relative flex flex-col items-center gap-8 md:gap-10 md:flex-row ${
+          className={`relative flex flex-col items-center gap-8 md:flex-row md:gap-10 ${
             isReverse ? "md:flex-row-reverse" : ""
           }`}
         >
@@ -188,21 +689,26 @@ function EventRow({
               className="h-full w-full"
             >
               <Image
-                src={event.image_url || "/events/event1.jpg"}
+                src={
+                  event.image_url ||
+                  "/events/event1.jpg"
+                }
                 alt={title}
-                // fill
                 width={800}
                 height={600}
                 priority
-                className="object-cover"
+                className="h-full w-full object-cover"
                 style={{
-                  objectPosition: `center ${event?.image_position_y ?? 50}%`,
+                  objectPosition: `center ${
+                    event.image_position_y ?? 50
+                  }%`,
                 }}
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             </motion.div>
 
             <div className="absolute inset-0 bg-linear-to-t from-black/45 via-black/10 to-transparent" />
+
             <div className="absolute inset-0 rounded-3xl border border-white/20" />
           </div>
 
@@ -233,7 +739,9 @@ function EventRow({
 
             <h3
               className={`mb-4 text-2xl font-semibold leading-tight md:text-3xl ${
-                isBlueCard ? "text-white" : "text-[#0d4db0]"
+                isBlueCard
+                  ? "text-white"
+                  : "text-[#0d4db0]"
               }`}
             >
               {title}
@@ -241,15 +749,17 @@ function EventRow({
 
             <div
               className={`prose prose-sm mb-6 max-w-none leading-relaxed ${
-                isBlueCard ? "prose-invert text-blue-50/90" : "text-slate-600"
+                isBlueCard
+                  ? "prose-invert text-blue-50/90"
+                  : "text-slate-600"
               }`}
               dangerouslySetInnerHTML={{
                 __html: description || "",
               }}
             />
 
-            <div className="mb-6 grid grid-cols-1 gap-3 text-sm sm:grid-cols-1">
-              {event?.location && (
+            <div className="mb-6 grid grid-cols-1 gap-3 text-sm">
+              {event.location && (
                 <div
                   className={`flex items-center gap-3 rounded-2xl border px-4 py-3 ${
                     isBlueCard
@@ -258,13 +768,22 @@ function EventRow({
                   }`}
                 >
                   <FaMapMarkerAlt
-                    className={isBlueCard ? "text-sky-100" : "text-[#0d4db0]"}
+                    className={
+                      isBlueCard
+                        ? "shrink-0 text-sky-100"
+                        : "shrink-0 text-[#0d4db0]"
+                    }
                   />
-                  <span>{event?.location ? event?.location : t.tbd}</span>
+
+                  <span>
+                    {event.location || t.tbd}
+                  </span>
                 </div>
               )}
 
-              {event.time_label && (
+              {(eventScheduleLabel ||
+                event.time_label ||
+                event.linkedEvent) && (
                 <div
                   className={`flex items-center gap-3 rounded-2xl border px-4 py-3 ${
                     isBlueCard
@@ -273,35 +792,64 @@ function EventRow({
                   }`}
                 >
                   <FaCalendarAlt
-                    className={isBlueCard ? "text-sky-100" : "text-[#0d4db0]"}
+                    className={
+                      isBlueCard
+                        ? "shrink-0 text-sky-100"
+                        : "shrink-0 text-[#0d4db0]"
+                    }
                   />
-                  <span>{formattedDate}</span>
+
+                  <div className="min-w-0">
+                    {isRecurringEvent && (
+                      <span
+                        className={`mr-1 font-semibold ${
+                          isBlueCard
+                            ? "text-sky-100"
+                            : "text-[#0d4db0]"
+                        }`}
+                      >
+                        {t.nextOccurrence}:
+                      </span>
+                    )}
+
+                    <span>{eventScheduleLabel}</span>
+                  </div>
                 </div>
               )}
 
-              {event.price_label && event.price_label != 0 && (
-                <span
-                  className={`flex items-center gap-3 rounded-2xl border px-4 py-3 sm:col-span-2 ${
-                    isBlueCard
-                      ? "border-white/15 bg-white/10 text-white"
-                      : "border-slate-200 bg-slate-50 text-slate-700"
-                  }`}
-                >
-                  <FaGift
-                    className={isBlueCard ? "text-sky-100" : "text-[#0d4db0]"}
-                  />
-                  <span>
-                    <span>{t.suggestedDonation}</span> ${event.price_label}
-                  </span>
-                </span>
-              )}
+              {!!event.price_label &&
+                event.price_label !== 0 && (
+                  <div
+                    className={`flex items-center gap-3 rounded-2xl border px-4 py-3 ${
+                      isBlueCard
+                        ? "border-white/15 bg-white/10 text-white"
+                        : "border-slate-200 bg-slate-50 text-slate-700"
+                    }`}
+                  >
+                    <FaGift
+                      className={
+                        isBlueCard
+                          ? "shrink-0 text-sky-100"
+                          : "shrink-0 text-[#0d4db0]"
+                      }
+                    />
+
+                    <span>
+                      <span>
+                        {t.suggestedDonation}
+                      </span>{" "}
+                      ${event.price_label}
+                    </span>
+                  </div>
+                )}
             </div>
 
             <motion.button
+              type="button"
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.97 }}
               onClick={handleNavigate}
-              className={`group relative inline-flex w-fit items-center justify-center overflow-hidden rounded-2xl px-6 py-3 font-semibold shadow-lg transition cursor-pointer ${
+              className={`group relative inline-flex w-fit cursor-pointer items-center justify-center overflow-hidden rounded-2xl px-6 py-3 font-semibold shadow-lg transition ${
                 isBlueCard
                   ? "border border-white/30 bg-white text-[#0d4db0] hover:text-white"
                   : "border border-[#0d4db0] bg-white text-[#0d4db0] hover:text-white"
@@ -312,6 +860,7 @@ function EventRow({
               </span>
 
               <span className="absolute inset-0 bg-linear-to-r from-[#0d4db0] to-sky-400 opacity-0 transition duration-500 group-hover:opacity-100" />
+
               <span className="absolute inset-0 z-20 flex items-center justify-center text-white opacity-0 transition duration-500 group-hover:opacity-100">
                 {ctaLabel}
               </span>
@@ -328,62 +877,183 @@ export default function EventsVerticalSection() {
   const isSpanish = language === "es";
 
   const t = {
-    backgroundWord: isSpanish ? "INICIATIVAS" : "EVENTS",
-    title: isSpanish ? "Iniciativas" : "Initiatives",
+    backgroundWord: isSpanish
+      ? "INICIATIVAS"
+      : "EVENTS",
+
+    title: isSpanish
+      ? "Iniciativas"
+      : "Initiatives",
+
     description: isSpanish
       ? "Mantente conectade con experiencias, programas, subvenciones y oportunidades comunitarias diseñadas para Paso Libre."
       : "Stay connected with experiences, programs, grants, and community opportunities designed for Paso Libre.",
-    loading: isSpanish ? "Cargando iniciativas..." : "Loading initiatives...",
+
+    loading: isSpanish
+      ? "Cargando iniciativas..."
+      : "Loading initiatives...",
+
     emptyTitle: isSpanish
       ? "No hay iniciativas disponibles ahora mismo"
       : "No initiatives available right now",
+
     emptyText: isSpanish
       ? "Vuelve pronto para ver próximas oportunidades y actualizaciones comunitarias."
       : "Check back soon for upcoming opportunities and community updates.",
   };
 
-  const [initiatives, setInitiatives] = useState<InitiativeRecord[]>([]);
+  const [initiatives, setInitiatives] = useState<
+    InitiativeRecord[]
+  >([]);
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     const loadInitiatives = async () => {
       try {
         setLoading(true);
 
-        const { data, error } = await supabase
-          .from("initiatives")
-          .select("*")
-          .eq("is_active", true)
-          .order("sort_order", { ascending: true })
-          .order("created_at", { ascending: false });
+        const { data: initiativeData, error } =
+          await supabase
+            .from("initiatives")
+            .select("*")
+            .eq("is_active", true)
+            .order("sort_order", {
+              ascending: true,
+            })
+            .order("created_at", {
+              ascending: false,
+            });
 
         if (error) throw error;
 
-        setInitiatives((data || []) as InitiativeRecord[]);
+        const baseInitiatives =
+          (initiativeData || []) as InitiativeRecord[];
+
+        const linkedEventIds = Array.from(
+          new Set(
+            baseInitiatives
+              .filter(
+                (initiative) =>
+                  initiative.source_type === "event" &&
+                  initiative.linked_event_id
+              )
+              .map(
+                (initiative) =>
+                  initiative.linked_event_id as string
+              )
+          )
+        );
+
+        let linkedEvents: LinkedEventRecord[] = [];
+
+        if (linkedEventIds.length > 0) {
+          const {
+            data: linkedEventData,
+            error: linkedEventError,
+          } = await supabase
+            .from("events")
+            .select(
+              `
+                id,
+                date,
+                time,
+                schedule_type,
+                recurrence,
+                days_of_week_csv,
+                day_of_month,
+                month,
+                months_csv,
+                recurrence_excluded_dates,
+                created_at
+              `
+            )
+            .in("id", linkedEventIds);
+
+          if (linkedEventError) {
+            throw linkedEventError;
+          }
+
+          linkedEvents =
+            (linkedEventData ||
+              []) as LinkedEventRecord[];
+        }
+
+        const linkedEventMap = new Map(
+          linkedEvents.map((linkedEvent) => [
+            linkedEvent.id,
+            linkedEvent,
+          ])
+        );
+
+        const enrichedInitiatives =
+          baseInitiatives.map((initiative) => ({
+            ...initiative,
+
+            linkedEvent:
+              initiative.linked_event_id
+                ? linkedEventMap.get(
+                    initiative.linked_event_id
+                  ) || null
+                : null,
+          }));
+
+        if (mounted) {
+          setInitiatives(enrichedInitiatives);
+        }
       } catch (error) {
-        console.error("Failed to load initiatives:", error);
-        setInitiatives([]);
+        console.error(
+          "Failed to load initiatives:",
+          error
+        );
+
+        if (mounted) {
+          setInitiatives([]);
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
-    loadInitiatives();
+    void loadInitiatives();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  const displayedInitiatives = useMemo(() => initiatives, [initiatives]);
+  const displayedInitiatives = useMemo(
+    () => initiatives,
+    [initiatives]
+  );
 
   return (
     <section className="relative overflow-hidden bg-white px-6 py-28">
       <motion.div
-        animate={{ x: [0, 40, 0], y: [0, -20, 0] }}
-        transition={{ duration: 20, repeat: Infinity }}
+        animate={{
+          x: [0, 40, 0],
+          y: [0, -20, 0],
+        }}
+        transition={{
+          duration: 20,
+          repeat: Infinity,
+        }}
         className="absolute -left-32 -top-32 h-96 w-96 bg-[#0d4db0]/10 blur-[120px]"
       />
 
       <motion.div
-        animate={{ x: [0, -40, 0], y: [0, 30, 0] }}
-        transition={{ duration: 24, repeat: Infinity }}
+        animate={{
+          x: [0, -40, 0],
+          y: [0, 30, 0],
+        }}
+        transition={{
+          duration: 24,
+          repeat: Infinity,
+        }}
         className="absolute -bottom-32 -right-32 h-96 w-96 bg-sky-400/10 blur-[120px]"
       />
 
@@ -404,18 +1074,31 @@ export default function EventsVerticalSection() {
 
         {loading ? (
           <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
-            <p className="text-slate-500">{t.loading}</p>
+            <p className="text-slate-500">
+              {t.loading}
+            </p>
           </div>
         ) : displayedInitiatives.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 p-12 text-center shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
-            <p className="font-medium text-slate-500">{t.emptyTitle}</p>
-            <p className="mt-2 text-sm text-slate-400">{t.emptyText}</p>
+            <p className="font-medium text-slate-500">
+              {t.emptyTitle}
+            </p>
+
+            <p className="mt-2 text-sm text-slate-400">
+              {t.emptyText}
+            </p>
           </div>
         ) : (
           <div className="flex flex-col gap-20">
-            {displayedInitiatives.map((event, index) => (
-              <EventRow key={event.id} event={event} index={index} />
-            ))}
+            {displayedInitiatives.map(
+              (event, index) => (
+                <EventRow
+                  key={event.id}
+                  event={event}
+                  index={index}
+                />
+              )
+            )}
           </div>
         )}
       </div>

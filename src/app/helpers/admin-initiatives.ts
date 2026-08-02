@@ -361,6 +361,18 @@ export const handleSave = async ({
     return;
   }
 
+  Swal.fire({ 
+    icon: "success",
+    title: "Initiative saved!",
+    text: "The initiative has been saved successfully.",
+    confirmButtonText: "Got it",
+    confirmButtonColor: "#0d4db0",
+    customClass: {
+      popup: "rounded-3xl",
+      confirmButton: "rounded-2xl px-5 py-2.5",
+    },
+  });
+
   await loadInitiatives({
     setLoading: setLoading,
     setInitiatives: setInitiatives,
