@@ -18,5 +18,6 @@ Bugs found testing so far
 [X] Fix event click  to confirm attendance
 [X] Add conf Swal after adding initiative
 [X] Enhance initiatives to include occurrence data and formatted time
+[] Completely translate the profile
 
 

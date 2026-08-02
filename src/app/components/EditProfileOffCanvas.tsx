@@ -50,7 +50,7 @@ type EditProfileOffCanvasProps = {
   t: Record<string, string>;
 };
 
-const genderOptions = [
+export const genderOptions = [
   {
     value: "Cis Woman",
     en: "Cis Woman",
@@ -113,7 +113,7 @@ const genderOptions = [
   },
 ];
 
-const pronounOptions = [
+export const pronounOptions = [
   {
     value: "he/him",
     en: "he/him",
@@ -136,7 +136,7 @@ const pronounOptions = [
   },
 ];
 
-const sexualOrientationOptions = [
+export const sexualOrientationOptions = [
   {
     value: "Heterosexual",
     en: "Heterosexual",

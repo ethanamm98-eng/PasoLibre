@@ -51,6 +51,104 @@ type ProfileState = {
   createdAt: string;
 };
 
+
+
+type LocalizedProfileOption = {
+  value: string;
+  en: string;
+  es: string;
+};
+
+const genderOptions: LocalizedProfileOption[] = [
+  { value: "Cis Woman", en: "Cis Woman", es: "Mujer Cisgénero" },
+  { value: "Cis Man", en: "Cis Man", es: "Hombre Cisgénero" },
+  { value: "Non-binary", en: "Non-binary", es: "No Binario" },
+  { value: "Trans Woman", en: "Trans Woman", es: "Mujer Trans" },
+  { value: "Trans Man", en: "Trans Man", es: "Hombre Trans" },
+  { value: "Genderqueer", en: "Genderqueer", es: "Genderqueer" },
+  { value: "Genderfluid", en: "Genderfluid", es: "Género Fluido" },
+  { value: "Agender", en: "Agender", es: "Agénero" },
+  { value: "Two-Spirit", en: "Two-Spirit", es: "Dos Espíritus" },
+  { value: "Intersex", en: "Intersex", es: "Intersexual" },
+  { value: "Prefer to self-describe", en: "Prefer to self-describe", es: "Prefiero describirme" },
+  { value: "Prefer not to say", en: "Prefer not to say", es: "Prefiero no decirlo" },
+];
+
+const pronounOptions: LocalizedProfileOption[] = [
+  { value: "he/him", en: "he/him", es: "él" },
+  { value: "she/her", en: "she/her", es: "ella" },
+  { value: "they/them", en: "they/them", es: "elle" },
+  { value: "other", en: "Other", es: "Otro" },
+];
+
+const sexualOrientationOptions: LocalizedProfileOption[] = [
+  { value: "Heterosexual", en: "Heterosexual", es: "Heterosexual" },
+  { value: "Gay", en: "Gay", es: "Gay" },
+  { value: "Lesbian", en: "Lesbian", es: "Lesbiana" },
+  { value: "Bisexual", en: "Bisexual", es: "Bisexual" },
+  { value: "Pansexual", en: "Pansexual", es: "Pansexual" },
+  { value: "Demisexual", en: "Demisexual", es: "Demisexual" },
+  { value: "Sapiosexual", en: "Sapiosexual", es: "Sapiosexual" },
+  { value: "Asexual", en: "Asexual", es: "Asexual" },
+  { value: "Heteroflexible", en: "Heteroflexible", es: "Heteroflexible" },
+  { value: "Bicurious", en: "Bicurious", es: "Bicuriose" },
+  { value: "Queer", en: "Queer", es: "Queer" },
+  { value: "Questioning", en: "Questioning", es: "Cuestionando" },
+  { value: "Other", en: "Other", es: "Otro" },
+  { value: "Prefer not to say", en: "Prefer not to say", es: "Prefiero no decirlo" },
+];
+
+const getLocalizedOptionLabel = (
+  value: string | null | undefined,
+  options: LocalizedProfileOption[],
+  language: "en" | "es"
+) => {
+  const rawValue = String(value || "").trim();
+
+  if (!rawValue) return "—";
+
+  const localizeSingleValue = (singleValue: string) => {
+    const normalizedValue = singleValue.trim().toLowerCase();
+
+    const matchingOption = options.find((option) =>
+      [option.value, option.en, option.es].some(
+        (label) => label.trim().toLowerCase() === normalizedValue
+      )
+    );
+
+    return matchingOption
+      ? matchingOption[language]
+      : singleValue.trim();
+  };
+
+  /*
+   * Profiles can contain one value or multiple comma-separated values,
+   * such as "he/him, they/them". Translate every saved option separately.
+   */
+  return rawValue
+    .split(/\s*[,;|]\s*/)
+    .filter(Boolean)
+    .map(localizeSingleValue)
+    .join(", ");
+};
+
+const getLocalizedRoleLabel = (role: string | null | undefined, language: "en" | "es") => {
+  const labels: Record<string, { en: string; es: string }> = {
+    member: { en: "Member", es: "Miembro" },
+    admin: { en: "Administrator", es: "Administrador" },
+    super_admin: { en: "Super Administrator", es: "Superadministrador" },
+  };
+  const key = String(role || "member").trim().toLowerCase();
+  return labels[key]?.[language] || String(role || "member").replaceAll("_", " ");
+};
+
+const getLocalizedLanguageLabel = (value: string | null | undefined, language: "en" | "es") => {
+  const key = String(value || "").trim().toLowerCase();
+  if (key === "es") return language === "es" ? "Español" : "Spanish";
+  if (key === "en") return language === "es" ? "Inglés" : "English";
+  return value || "—";
+};
+
 type WalkingClubAttendanceRecord = {
   id: string;
   checked_in_at: string | null;
@@ -202,6 +300,8 @@ export default function ProfilePage() {
     goHome: isSpanish ? "Ir al Inicio" : "Go Home",
     uploading: isSpanish ? "Subiendo..." : "Uploading...",
     changePhoto: isSpanish ? "Cambiar Foto" : "Change Photo",
+    email: isSpanish ? "Correo electrónico" : "Email",
+    profilePictureAlt: isSpanish ? "Foto de perfil" : "Profile picture",
     noEmail: isSpanish ? "Sin correo" : "No email",
     saving: isSpanish ? "Guardando..." : "Saving...",
     saveChanges: isSpanish ? "Guardar Cambios" : "Save Changes",
@@ -340,6 +440,31 @@ export default function ProfilePage() {
       ? event.name_es || event.name_en || event.name || "—"
       : event.name_en || event.name_es || event.name || "—";
   };
+
+  const localizedGender = useMemo(
+    () => getLocalizedOptionLabel(profile.gender, genderOptions, isSpanish ? "es" : "en"),
+    [profile.gender, isSpanish]
+  );
+
+  const localizedPronouns = useMemo(
+    () => getLocalizedOptionLabel(profile.pronouns, pronounOptions, isSpanish ? "es" : "en"),
+    [profile.pronouns, isSpanish]
+  );
+
+  const localizedSexualOrientation = useMemo(
+    () => getLocalizedOptionLabel(profile.sexualOrientation, sexualOrientationOptions, isSpanish ? "es" : "en"),
+    [profile.sexualOrientation, isSpanish]
+  );
+
+  const localizedRole = useMemo(
+    () => getLocalizedRoleLabel(profile.role, isSpanish ? "es" : "en"),
+    [profile.role, isSpanish]
+  );
+
+  const localizedLanguagePreference = useMemo(
+    () => getLocalizedLanguageLabel(profile.languagePreference, isSpanish ? "es" : "en"),
+    [profile.languagePreference, isSpanish]
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -870,7 +995,7 @@ export default function ProfilePage() {
                   {profile.profilePicture ? (
                     <Image
                       src={profile.profilePicture}
-                      alt="Profile Picture"
+                      alt={t.profilePictureAlt}
                       width={128}
                       height={128}
                       className="h-full w-full object-cover"
@@ -892,10 +1017,10 @@ export default function ProfilePage() {
                   {profile.username ? `@${profile.username}` : ""}
                 </p>
 
-                <div className="mt-4 flex flex-wrap justify-center gap-2 capitalize">
+                <div className="mt-4 flex flex-wrap justify-center gap-2">
                   <HeaderBadge
                     icon={<ShieldCheck size={14} />}
-                    label={profile.role || "member"}
+                    label={localizedRole}
                   />
                 </div>
 
@@ -962,27 +1087,33 @@ export default function ProfilePage() {
               label={t.location}
               value={[profile.city, profile.country].filter(Boolean).join(", ")}
             />
+            {/* Translate gender, pronouns and sexual orientation */}
             <InfoRow
               icon={<BsGenderTrans size={15} />}
               label={t.gender}
-              value={profile.gender || "—"}
+              value={localizedGender}
             />
             <InfoRow
               icon={<TbRainbow size={15} />}
               label={t.pronouns}
-              value={profile.pronouns || "—"}
+              value={localizedPronouns}
             />
             <InfoRow
               icon={<RiUserHeartLine size={15} />}
               label={t.sexualOrientation}
-              value={profile.sexualOrientation || "—"}
+              value={localizedSexualOrientation}
+            />
+            <InfoRow
+              icon={<LuContactRound size={15} />}
+              label={t.languagePreference}
+              value={localizedLanguagePreference}
             />
           </ProfilePanel>
 
           <ProfilePanel title={t.contact} icon={<LuContactRound size={16} />}>
             <InfoRow
               icon={<Mail size={15} />}
-              label="Email"
+              label={t.email}
               value={profile.email || t.noEmail}
             />
             <InfoRow
@@ -1215,11 +1346,7 @@ function InfoRow({
   value: string;
 }) {
   return (
-    <div
-      className={`flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 px-3 py-3 ${
-        label?.toLowerCase() === "email" ? "lowercase" : "capitalize"
-      }`}
-    >
+    <div className="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 px-3 py-3">
       <span className="mt-0.5 text-blue-700">{icon}</span>
       <div className="min-w-0">
         <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
