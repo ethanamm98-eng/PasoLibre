@@ -54,6 +54,7 @@ const WeekView = ({
   calendarMode = "admin",
   calendarThemeKey,
   setCalendarThemeKey,
+  loadEvents
 }: {
   events: SchedulerForm[];
   onEventClick?: (params: {
@@ -69,6 +70,7 @@ const WeekView = ({
   calendarMode?: "admin" | "member";
   calendarThemeKey?: string | null;
   setCalendarThemeKey?: (key: CalendarThemeKey) => void;
+  loadEvents?: () => void;
 }) => {
   const { language } = useLanguage(); // es or en
   const isSpanish = language === "es";
@@ -1355,6 +1357,7 @@ const WeekView = ({
               setAttendanceAnchor(null);
             }
           }}
+          loadEvents={loadEvents}
         />
       )}
     </div>

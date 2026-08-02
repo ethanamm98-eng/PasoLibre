@@ -280,6 +280,7 @@ const CalendarMain = ({
             onOpenScheduleForm={handleOpenCreate}
             onOpenRecurringForm={() => setRecurrenceSettingsMode("edit")}
             clearSchedulerForm={clearSchedulerForm}
+            loadEvents={loadEvents}
           />
         );
 
