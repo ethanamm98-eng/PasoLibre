@@ -1,4 +1,6 @@
 {
+  "/api/event-attendance/route": "app/api/event-attendance/route.js",
+  "/check-in/[eventId]/page": "app/check-in/[eventId]/page.js",
   "/initiatives/page": "app/initiatives/page.js",
   "/page": "app/page.js"
 }

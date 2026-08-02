@@ -17,6 +17,6 @@ Bugs found testing so far
 [X] ] Fix discard bug in message scheduler
 [X] Fix event click  to confirm attendance
 [X] Add conf Swal after adding initiative
-[] Enhance initiatives to include occurrence data and formatted time
+[X] Enhance initiatives to include occurrence data and formatted time
 
 
