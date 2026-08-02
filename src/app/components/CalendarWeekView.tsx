@@ -70,7 +70,7 @@ const WeekView = ({
   calendarMode?: "admin" | "member";
   calendarThemeKey?: string | null;
   setCalendarThemeKey?: (key: CalendarThemeKey) => void;
-  loadEvents?: () => void;
+  loadEvents?: any;
 }) => {
   const { language } = useLanguage(); // es or en
   const isSpanish = language === "es";
