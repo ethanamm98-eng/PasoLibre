@@ -14,7 +14,7 @@ import { FaGift, FaShirt } from "react-icons/fa6";
 import { SiGoogleforms } from "react-icons/si";
 import { FiRepeat } from "react-icons/fi";
 import { GiTeacher } from "react-icons/gi";
-import { BookOpenText, PauseCircle, PlayCircle, Sparkles } from "lucide-react";
+import { BadgeInfoIcon, BookOpenText, PauseCircle, PlayCircle, Sparkles } from "lucide-react";
 
 import { supabase } from "../lib/supabase/supabaseClient";
 import { useLanguage } from "../context/language";
@@ -572,7 +572,8 @@ export default function EventDetails({
               <span className="absolute -left-[3px] top-1 h-2 w-2 rounded-full bg-[#5BCEFA] shadow-[0_0_14px_rgba(91,206,250,0.65)]" />
 
               <div
-                className="prose prose-sm max-w-none text-slate-600 prose-p:leading-7 prose-p:tracking-[-0.01em] prose-strong:text-slate-900 prose-a:font-semibold prose-a:text-sky-700 md:prose-base md:prose-p:leading-8"
+                className="prose prose-sm max-w-none text-slate-600 prose-p:leading-7 prose-p:tracking-[-0.01em] prose-strong:text-slate-900 prose-a:font-semibold prose-a:text-sky-700 md:prose-base md:prose-p:leading-8
+                text-justify"
                 dangerouslySetInnerHTML={{
                   __html: eventDescription || t.noDescription,
                 }}
@@ -700,7 +701,7 @@ export default function EventDetails({
           <div className="relative">
             <div className="mb-5 flex items-start gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/90 text-sky-700 shadow-[0_10px_26px_rgba(91,206,250,0.14)] ring-1 ring-white">
-                <FaCalendarAlt className="text-sm" />
+                <BadgeInfoIcon className="text-sm" />
               </div>
 
               <div className="min-w-0">
@@ -785,7 +786,7 @@ export default function EventDetails({
         </section>
 
         {!!eventDetails && (
-          <div className="mt-6 rounded-[1.5rem] border border-slate-200/80 bg-linear-to-br from-slate-50 via-white to-blue-50/40 px-5 py-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+          <div className="mt-6 rounded-[1.5rem] border border-slate-200/80 bg-linear-to-br from-slate-50 via-white to-blue-50/40 px-5 py-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)] text-justify">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
               {t.additionalDetails}
             </p>

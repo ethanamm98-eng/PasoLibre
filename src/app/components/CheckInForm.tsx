@@ -940,7 +940,7 @@ export default function CheckInForm({
               <div className="pointer-events-none absolute inset-0 rounded-[1.15rem] bg-blue-300/30 blur-xl" />
 
               <div
-                className={`relative flex h-14 w-14 items-center justify-center rounded-[1.15rem] border shadow-[0_16px_36px_rgba(2,6,23,0.28),inset_0_1px_0_rgba(255,255,255,0.22)] backdrop-blur-xl transition ${
+                className={`relative flex h-10 w-10 items-center justify-center rounded-[1.15rem] border shadow-[0_16px_36px_rgba(2,6,23,0.28),inset_0_1px_0_rgba(255,255,255,0.22)] backdrop-blur-xl transition ${
                   confirmed
                     ? "border-emerald-200/30 bg-emerald-400/18 text-emerald-100"
                     : "border-white/25 bg-white/12 text-white"
@@ -950,9 +950,9 @@ export default function CheckInForm({
 
                 <span className="relative">
                   {confirmed ? (
-                    <CheckCircle2 size={28} />
+                    <CheckCircle2 size={20} />
                   ) : (
-                    <CalendarCheck2 size={28} />
+                    <CalendarCheck2 size={20} />
                   )}
                 </span>
               </div>
@@ -973,9 +973,9 @@ export default function CheckInForm({
                 {confirmed ? t.cardTitleConfirmed : t.cardTitleDefault}
               </h2>
 
-              <p className="mt-2 max-w-xl text-sm font-medium leading-6 text-blue-100/90">
+              {!confirmed && <p className="mt-2 max-w-xl text-sm font-medium leading-6 text-blue-100/90">
                 {confirmed ? t.cardTextConfirmed : t.cardTextDefault}
-              </p>
+              </p>}
 
               <div className="mt-4 flex items-center gap-2" aria-hidden="true">
                 <span className="h-px w-12 bg-linear-to-r from-white/45 to-transparent" />
