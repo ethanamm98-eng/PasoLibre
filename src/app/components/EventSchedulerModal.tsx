@@ -891,6 +891,8 @@ const EventSchedulerModal = ({
 
     if (!validRecipients.length) return;
 
+    console.log("Preparing to send invitation emails to recipients:", validRecipients); 
+
     const invitationPayload = {
       eventId: savedEvent.id,
       eventNameEn: schedulerForm?.name_en,
