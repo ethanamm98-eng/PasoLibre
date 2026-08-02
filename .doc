@@ -1,13 +1,20 @@
 Bugs found testing so far
 [X] Fix login logo
 [X] Fix Account Manager Missing NEXT_PUBLIC_SUPABASE_URL
-[ ] Fix Check-In page ( Crashing: Application error )
 [X] Translate Home in Mobile Navigation Background
-[ ] Verify Home Page speed
+[X] Verify Home Page speed
 [X] Fix assistance edit and add english event title
-[ ] Clear all home page warnings
+[X] Clear all home page warnings
 [X] Check active announcements
 
 
+
+[X] Redesign invitation
+[X] Verify logo in emails
+[X] Verify language preference in different accounts
+[X] Fix the hearts in About Page
+[X] Send Event Invitation when confirming from the Calendar
+[ ] Fix discard bug in message scheduler
+[ ] Fix event click  to confirm attendance
 
 

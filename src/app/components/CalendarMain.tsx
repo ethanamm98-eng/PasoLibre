@@ -296,6 +296,7 @@ const CalendarMain = ({
             onEventClick={handleCalendarClick}
             onOpenScheduleForm={handleOpenCreate}
             onOpenRecurringForm={() => setRecurrenceSettingsMode("edit")}
+            loadEvents={loadEvents}
           />
         );
 
@@ -307,7 +308,7 @@ const CalendarMain = ({
   if (authLoading) {
     return (
       <div
-        className={`mb-2 overflow-visible rounded-3xl border border-slate-300 shadow-2xl backdrop-blur-sm ${theme.shell}`}
+        className={`mb-2 overflow-hidden rounded-3xl border border-slate-300 shadow-2xl backdrop-blur-sm ${theme.shell}`}
       >
         <div className="flex min-h-55 items-center justify-center text-gray-500">
           {t.verifyingAccess}
@@ -318,7 +319,7 @@ const CalendarMain = ({
 
   return (
     <div
-      className={`mb-2 overflow-visible rounded-3xl border border-slate-300 shadow-2xl backdrop-blur-sm ${theme.shell}`}
+      className={`mb-2 overflow-hidden rounded-3xl border border-slate-300 shadow-2xl backdrop-blur-sm ${theme.shell}`}
     >
       <div
         className={`relative rounded-t-3xl border-b px-10 pb-4 pt-6 backdrop-blur ${theme.mobileHeader}`}

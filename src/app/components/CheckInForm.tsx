@@ -18,6 +18,7 @@ import { createRoot } from "react-dom/client";
 import FloatingLabelInput from "./elements/FloatingLabelInput";
 import { useLanguage } from "../context/language";
 import { SchedulerForm } from "../lib/interfaces/events";
+import { sendAttendanceConfirmationEmail } from "../helpers/emails";
 
 type AttendanceSheetRecord = {
   id: string;
@@ -187,6 +188,22 @@ export default function CheckInForm({
     noMusicResults: isSpanish
       ? "Busca una canción para ver resultados."
       : "Search for a song to see results.",
+    shareSectionTitle: isSpanish ? "Comparte este evento" : "Share this event",
+    shareSectionDescription: isSpanish
+      ? "Invita a otras personas usando el código QR o comparte el enlace directamente."
+      : "Invite others with the QR code or share the event link directly.",
+    attendanceSectionTitle: isSpanish
+      ? "Confirma tu asistencia"
+      : "Confirm your attendance",
+    attendanceSectionDescription: isSpanish
+      ? "Inicia sesión para completar tus datos automáticamente o continúa como invitado."
+      : "Sign in to auto-fill your details or continue as a guest.",
+    yourInformation: isSpanish ? "Tu información" : "Your information",
+    guestInformation: isSpanish
+      ? "Información del invitado"
+      : "Guest information",
+    accountAccess: isSpanish ? "Acceso a tu cuenta" : "Account access",
+    shareTools: isSpanish ? "Opciones para compartir" : "Sharing tools",
   };
 
   const [loading, setLoading] = useState(false);
@@ -195,20 +212,20 @@ export default function CheckInForm({
   const [qrOpen, setQrOpen] = useState(false);
 
   const [confirmed, setConfirmed] = useState(
-    existingEntry?.status === "attended" || !!existingEntry?.checked_in
+    existingEntry?.status === "attended" || !!existingEntry?.checked_in,
   );
 
   const [, setParticipantCount] = useState(0);
   const [, setConfirmedCount] = useState(
-    existingEntry?.status === "attended" || existingEntry?.checked_in ? 1 : 0
+    existingEntry?.status === "attended" || existingEntry?.checked_in ? 1 : 0,
   );
 
   const [loggedInUserState, setLoggedInUserState] = useState<unknown | null>(
-    () => loggedInUser || null
+    () => loggedInUser || null,
   );
 
   const [profile, setProfile] = useState<ProfileRecord | null>(
-    loggedInProfile || null
+    loggedInProfile || null,
   );
 
   const [resolvedAttendanceSheet, setResolvedAttendanceSheet] =
@@ -245,7 +262,7 @@ export default function CheckInForm({
   } | null>(null);
 
   const [checkInUrl, setCheckInUrl] = useState(
-    `/check-in/${event.id}?occurrenceDate=${event.date}`
+    `/check-in/${event.id}?occurrenceDate=${event.date}`,
   );
 
   const effectiveAttendanceSheetId =
@@ -274,7 +291,7 @@ export default function CheckInForm({
 
   useEffect(() => {
     setCheckInUrl(
-      `${window.location.origin}/check-in/${event.id}?occurrenceDate=${event.date}`
+      `${window.location.origin}/check-in/${event.id}?occurrenceDate=${event.date}`,
     );
   }, [event.id, event.date]);
 
@@ -304,7 +321,7 @@ export default function CheckInForm({
       }${getSelectedMusicText()}`;
 
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(
-        `${shareText}\n${checkInUrl}`
+        `${shareText}\n${checkInUrl}`,
       )}`;
 
       const instagramText = `${shareText}\n${checkInUrl}`;
@@ -572,7 +589,7 @@ export default function CheckInForm({
         if (result.existingEntry) {
           setConfirmed(
             result.existingEntry.status === "attended" ||
-              !!result.existingEntry.checked_in
+              !!result.existingEntry.checked_in,
           );
 
           setFormData((prev) => ({
@@ -595,42 +612,6 @@ export default function CheckInForm({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event.id, invitedMemberId, invitedEmail, loggedInUserState]);
-
-  const sendAttendanceConfirmationEmail = async () => {
-    const recipientEmail = formData.email.trim();
-
-    if (!recipientEmail) return;
-
-    try {
-      const response = await fetch("/api/send-attendance-confirmation", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          eventId: event?.id,
-          eventNameEn: event?.name_en,
-          eventNameEs: event?.name_es,
-          eventDate: event?.occurrenceDate || event?.date,
-          participantName: formData.name.trim(),
-          participantEmail: recipientEmail,
-          participantLanguagePreference:
-            profile?.language_preference || language || "en",
-          checkInUrl,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok || !result?.success) {
-        throw new Error(
-          result?.message || result?.error || t.confirmationEmailFailed
-        );
-      }
-    } catch (error) {
-      console.error("Attendance confirmation email error:", error);
-    }
-  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -717,7 +698,19 @@ export default function CheckInForm({
       setConfirmedCount(result.confirmedCount || 0);
       setConfirmed(true);
 
-      await sendAttendanceConfirmationEmail();
+      const payload = {
+        eventId: event?.id,
+        eventNameEn: event?.name_en,
+        eventNameEs: event?.name_es,
+        eventDate: event?.occurrenceDate || event?.date,
+        participantName: formData.name.trim(),
+        participantEmail: formData.email.trim(),
+        participantLanguagePreference:
+          profile?.language_preference || language || "en",
+        checkInUrl,
+      };
+
+      await sendAttendanceConfirmationEmail(payload as any);
 
       Swal.fire({
         icon: "success",
@@ -740,7 +733,7 @@ export default function CheckInForm({
   useEffect(() => {
     setResolvedExistingEntry(existingEntry || null);
     setConfirmed(
-      existingEntry?.status === "attended" || !!existingEntry?.checked_in
+      existingEntry?.status === "attended" || !!existingEntry?.checked_in,
     );
   }, [existingEntry]);
 
@@ -892,7 +885,7 @@ export default function CheckInForm({
             fgColor="#0d4db0"
             level="H"
             includeMargin={false}
-          />
+          />,
         );
       },
       willClose: () => {
@@ -904,234 +897,356 @@ export default function CheckInForm({
 
   return (
     <>
-      <div
-        className={`relative my-0 w-full overflow-hidden rounded-4xl border px-5 py-6 shadow-[0_24px_70px_rgba(15,23,42,0.12)] backdrop-blur-xl transition-all duration-500 md:px-6 md:py-7 ${
-          confirmed
-            ? "border-green-200 bg-linear-to-br from-green-50 via-white to-blue-50"
-            : "border-white/80 bg-white/92"
-        }`}
-      >
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.10),transparent_32%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.10),transparent_24%)]" />
+      <div className="relative w-full min-w-0">
+        <div className="pointer-events-none absolute -right-10 top-14 h-48 w-48 rounded-full bg-[#F5A9B8]/10 blur-3xl" />
+        <div className="pointer-events-none absolute -left-12 bottom-24 h-44 w-44 rounded-full bg-[#5BCEFA]/10 blur-3xl" />
 
-        <div className="relative">
-          <div className="mb-1 flex items-start gap-3">
-            <div
-              className={`flex h-10 w-10 md:h-13 md:w-13 shrink-0 items-center justify-center rounded-2xl shadow-sm ${
-                confirmed
-                  ? "bg-green-100 text-green-700"
-                  : "bg-blue-50 text-blue-700"
-              }`}
-            >
-              {confirmed ? (
-                <CheckCircle2 size={23} />
-              ) : (
-                <CalendarCheck2 className="md:w-8 md:h-8 w-6 h-6" />
-              )}
-            </div>
+        <div className="relative isolate overflow-hidden rounded-[1.75rem] border border-white/20 px-5 py-6 text-white shadow-[0_28px_75px_rgba(13,77,176,0.28),0_10px_28px_rgba(2,6,23,0.16)] sm:rounded-[2rem] sm:px-7 sm:py-7">
+          {/* Paso Libre brand gradient */}
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(circle at 50% -28%, rgba(255,255,255,0.34), transparent 44%), radial-gradient(circle at 8% 18%, rgba(91,206,250,0.34), transparent 34%), radial-gradient(circle at 92% 15%, rgba(245,169,184,0.18), transparent 31%), radial-gradient(circle at 52% 112%, rgba(13,77,176,0.56), transparent 48%), linear-gradient(135deg, #06285f 0%, #0a3f91 24%, #0d4db0 48%, #2369ce 72%, #4b9ee8 100%)",
+            }}
+          />
 
-            <div>
-              <p className="mb-1 inline-flex rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-blue-700">
-                {language === "en" ? "Invitation" : "Invitación"}
-              </p>
+          {/* Central brand illumination */}
+          <div className="pointer-events-none absolute left-1/2 top-0 h-44 w-[78%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0d4db0]/55 blur-[70px]" />
 
-              <h2 className="text-lg md:text-2xl font-semibold tracking-tight text-slate-950">
-                {confirmed ? t.cardTitleConfirmed : t.cardTitleDefault}
-              </h2>
-            </div>
-          </div>
+          {/* Restrained pride lighting */}
+          <div className="pointer-events-none absolute -left-16 -top-14 h-44 w-44 rounded-full bg-[#5BCEFA]/22 blur-3xl" />
+          <div className="pointer-events-none absolute -right-16 -top-14 h-40 w-40 rounded-full bg-[#F5A9B8]/12 blur-3xl" />
 
-          <div>
-            <p className="mt-1 mb-2 text-sm leading-6 text-slate-500 px-1">
-              {confirmed ? t.cardTextConfirmed : t.cardTextDefault}
-            </p>
-          </div>
+          {/* Soft stage-light beam */}
+          <div className="pointer-events-none absolute left-1/2 top-[-5rem] h-52 w-[34rem] -translate-x-1/2 rotate-[-6deg] bg-white/8 blur-[85px]" />
 
-          <button
-            type="button"
-            onClick={handleOpenQrAlert}
-            className="mb-5 w-full cursor-pointer overflow-hidden rounded-[1.35rem] border border-blue-100 bg-linear-to-br from-blue-50 via-white to-slate-50 p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg"
-          >
-            <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left lg:flex-col lg:text-center xl:flex-row xl:text-left">
-              <div className="relative shrink-0 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-                <QRCodeCanvas
-                  value={checkInUrl}
-                  size={112}
-                  bgColor="#ffffff"
-                  fgColor="#0d4db0"
-                  level="H"
-                  includeMargin={false}
-                />
+          {/* Fine atmospheric texture */}
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.08]"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle, rgba(255,255,255,0.9) 0.75px, transparent 0.75px)",
+              backgroundSize: "24px 24px",
+            }}
+          />
 
-                <div className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full border border-blue-100 bg-white text-blue-700 shadow-sm">
-                  <Maximize2 size={15} />
-                </div>
-              </div>
+          {/* Gloss and lower depth */}
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/65 to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-linear-to-t from-[#041b43]/55 via-[#082f70]/18 to-transparent" />
 
-              <div className="min-w-0 max-w-full">
-                <p className="text-sm font-semibold text-slate-900">
-                  {t.qrTitle}
-                </p>
+          <div className="relative flex items-start gap-4">
+            <div className="relative shrink-0">
+              <div className="pointer-events-none absolute inset-0 rounded-[1.15rem] bg-blue-300/30 blur-xl" />
 
-                <p className="mt-1 text-sm leading-5 text-slate-500">
-                  {t.qrDescription}
-                </p>
+              <div
+                className={`relative flex h-14 w-14 items-center justify-center rounded-[1.15rem] border shadow-[0_16px_36px_rgba(2,6,23,0.28),inset_0_1px_0_rgba(255,255,255,0.22)] backdrop-blur-xl transition ${
+                  confirmed
+                    ? "border-emerald-200/30 bg-emerald-400/18 text-emerald-100"
+                    : "border-white/25 bg-white/12 text-white"
+                }`}
+              >
+                <span className="pointer-events-none absolute inset-0 rounded-[inherit] bg-linear-to-br from-white/18 via-transparent to-blue-950/12" />
 
-                <p className="mt-2 max-w-full truncate rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-500">
-                  {checkInUrl}
-                </p>
-
-                <p className="mt-2 text-xs font-semibold text-blue-600">
-                  {t.qrClick}
-                </p>
-              </div>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleShareEvent}
-            className={`${
-              confirmed ? "mb-3" : "mb-5"
-            }  inline-flex w-full items-center justify-center gap-2 rounded-2xl 
-              bg-linear-to-r from-[#0d4db0] via-blue-600 to-indigo-700 px-5 py-3.5 text-sm font-semibold text-white shadow-[0_14px_35px_rgba(37,99,235,0.28)] transition hover:-translate-y-0.5 hover:shadow-[0_20px_45px_rgba(37,99,235,0.38)] cursor-pointer`}
-          >
-            <Share2 size={16} />
-            {t.shareEvent}
-          </button>
-
-          {!confirmed && (
-            <div className="mb-5 rounded-[1.35rem] border border-slate-200 bg-slate-50/90 px-4 py-4 shadow-sm">
-              {profileLoading ? (
-                <p className="text-sm text-slate-500">{t.checkingAccount}</p>
-              ) : loggedInUserState ? (
-                <div className="flex items-start gap-3">
-                  <div>
-                    <div className="flex gap-3">
-                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-2xl bg-green-100 text-green-700">
-                        <UserCheck size={18} />
-                      </div>
-                      <p className="text-base font-semibold text-slate-800 my-auto">
-                        {t.signedIn}
-                      </p>
-                    </div>
-
-                    <p className="mt-1 text-sm leading-6 text-slate-500 p-1">
-                      {t.autoFilled}
-                      {autoFilledName
-                        ? ` ${isSpanish ? "para" : "for"} ${autoFilledName}`
-                        : ""}
-                      . {t.reviewConfirm}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-800">
-                      {t.continueGuestOrSignIn}
-                    </p>
-
-                    <p className="mt-1 text-sm leading-6 text-slate-500">
-                      {t.guestText}
-                    </p>
-                  </div>
-
-                  <Link
-                    href={`/login?redirect=/check-in/${event?.id}`}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-blue-200 bg-white px-4 py-3 text-sm font-semibold text-blue-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-50 hover:shadow-md"
-                  >
-                    <LogIn size={16} />
-                    <span>{t.signIn}</span>
-                  </Link>
-                </div>
-              )}
-            </div>
-          )}
-
-          {!confirmed && !profileLoading && !loggedInUserState && (
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200" />
-              </div>
-
-              <div className="relative flex justify-center">
-                <span className="rounded-full border border-slate-200 bg-white px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400 shadow-sm">
-                  {t.orContinueGuest}
+                <span className="relative">
+                  {confirmed ? (
+                    <CheckCircle2 size={28} />
+                  ) : (
+                    <CalendarCheck2 size={28} />
+                  )}
                 </span>
               </div>
             </div>
-          )}
 
-          {/* Form to fill out and check in */}
-          {!confirmed && (
-            <div className="space-y-3 rounded-[1.35rem] border border-slate-200 bg-white/80 p-4 shadow-sm">
-              <FloatingLabelInput
-                id="name"
-                name="name"
-                label={t.fullName}
-                value={formData.name}
-                onChange={handleChange}
-                type="text"
-              />
+            <div className="min-w-0">
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-sky-300 shadow-[0_0_14px_rgba(125,211,252,0.95)]" />
 
-              <FloatingLabelInput
-                id="email"
-                name="email"
-                label={t.email}
-                value={formData.email}
-                onChange={handleChange}
-                type="email"
-              />
+                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-blue-100/95">
+                  {language === "en"
+                    ? "Event invitation"
+                    : "Invitación al evento"}
+                </p>
+              </div>
 
-              <FloatingLabelInput
-                id="phone"
-                name="phone"
-                label={t.phone}
-                value={formData.phone}
-                onChange={handleChange}
-                type="tel"
-              />
+              <h2 className="text-2xl font-black tracking-[-0.04em] text-white drop-shadow-[0_8px_24px_rgba(2,6,23,0.24)] sm:text-3xl">
+                {confirmed ? t.cardTitleConfirmed : t.cardTitleDefault}
+              </h2>
+
+              <p className="mt-2 max-w-xl text-sm font-medium leading-6 text-blue-100/90">
+                {confirmed ? t.cardTextConfirmed : t.cardTextDefault}
+              </p>
+
+              <div className="mt-4 flex items-center gap-2" aria-hidden="true">
+                <span className="h-px w-12 bg-linear-to-r from-white/45 to-transparent" />
+                <span className="h-1.5 w-1.5 rotate-45 rounded-[1px] border border-white/35 bg-white/15" />
+              </div>
             </div>
-          )}
+          </div>
+        </div>
 
-          {/* Confirm attendance button */}
+        <div className="relative space-y-7 px-1 pb-2 pt-7 sm:px-2 sm:pt-8">
+          {/* SHARE WORKFLOW */}
+          <section
+            aria-labelledby="share-event-section"
+            className="relative overflow-hidden rounded-[1.85rem] border border-blue-100/80 bg-[linear-gradient(145deg,rgba(239,246,255,0.96),rgba(255,255,255,0.98)_45%,rgba(248,250,252,0.96))] p-4 shadow-[0_18px_48px_rgba(13,77,176,0.09)] sm:p-5"
+          >
+            <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-[#5BCEFA]/16 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-20 -left-16 h-48 w-48 rounded-full bg-[#0d4db0]/8 blur-3xl" />
+
+            <div className="relative">
+              <div className="mb-5 flex items-start gap-3.5">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-blue-100 bg-white text-[#0d4db0] shadow-[0_10px_24px_rgba(13,77,176,0.12)]">
+                  <Share2 size={19} />
+                </div>
+
+                <div className="min-w-0">
+                  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-600">
+                    {t.shareTools}
+                  </p>
+                  <h3
+                    id="share-event-section"
+                    className="mt-1 text-lg font-black tracking-[-0.025em] text-slate-950"
+                  >
+                    {t.shareSectionTitle}
+                  </h3>
+                  <p className="mt-1.5 text-sm leading-6 text-slate-500">
+                    {t.shareSectionDescription}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleOpenQrAlert}
+                className="group w-full cursor-pointer overflow-hidden rounded-[1.55rem] border border-slate-200/80 bg-white/88 p-4 text-left shadow-[0_10px_28px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-[0_16px_38px_rgba(37,99,235,0.12)]"
+              >
+                <div className="flex flex-col items-center gap-5 text-center sm:flex-row sm:text-left lg:flex-col lg:text-center xl:flex-row xl:text-left">
+                  <div className="relative shrink-0 rounded-[1.3rem] border border-blue-100 bg-white p-3 shadow-[0_12px_30px_rgba(15,23,42,0.09)] transition-transform duration-300 group-hover:scale-[1.02]">
+                    <QRCodeCanvas
+                      value={checkInUrl}
+                      size={112}
+                      bgColor="#ffffff"
+                      fgColor="#0d4db0"
+                      level="H"
+                      includeMargin={false}
+                    />
+
+                    <div className="absolute -right-2.5 -top-2.5 flex h-9 w-9 items-center justify-center rounded-full border border-blue-100 bg-white text-blue-700 shadow-lg">
+                      <Maximize2 size={16} />
+                    </div>
+                  </div>
+
+                  <div className="min-w-0 max-w-full flex-1">
+                    <p className="text-base font-bold tracking-[-0.01em] text-slate-950">
+                      {t.qrTitle}
+                    </p>
+                    <p className="mt-1.5 text-sm leading-6 text-slate-500">
+                      {t.qrDescription}
+                    </p>
+                    <p className="mt-3 max-w-full truncate rounded-xl border border-slate-200 bg-slate-50/90 px-3 py-2 text-xs text-slate-500 shadow-inner">
+                      {checkInUrl}
+                    </p>
+                    <p className="mt-3 text-xs font-bold uppercase tracking-[0.12em] text-blue-600">
+                      {t.qrClick}
+                    </p>
+                  </div>
+                </div>
+              </button>
+
+              <div className="my-4 flex items-center gap-3" aria-hidden="true">
+                <span className="h-px flex-1 bg-linear-to-r from-transparent via-slate-200 to-slate-200" />
+                <span className="h-1.5 w-1.5 rotate-45 rounded-[1px] bg-blue-200" />
+                <span className="h-px flex-1 bg-linear-to-l from-transparent via-slate-200 to-slate-200" />
+              </div>
+
+              <button
+                type="button"
+                onClick={handleShareEvent}
+                className="group relative inline-flex w-full cursor-pointer items-center justify-center gap-2.5 overflow-hidden rounded-2xl border border-white/20 bg-[linear-gradient(110deg,#0d4db0_0%,#2563eb_50%,#174ea6_100%)] px-5 py-4 text-sm font-bold text-white shadow-[0_16px_36px_rgba(13,77,176,0.24)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_22px_48px_rgba(13,77,176,0.34)]"
+              >
+                <span className="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                <Share2 size={17} className="relative" />
+                <span className="relative">{t.shareEvent}</span>
+              </button>
+            </div>
+          </section>
+
+          {/* ATTENDANCE WORKFLOW */}
           {!confirmed && (
-            <button
-              type="button"
-              onClick={handleConfirmAttendance}
-              disabled={
-                loading || sheetLoading || !attendanceActive || confirmed
-              }
-              className={`mt-6 inline-flex w-full items-center justify-center rounded-2xl px-5 py-3.5 text-sm font-semibold text-white shadow-lg transition ${
-                confirmed
-                  ? "bg-linear-to-r from-green-600 to-emerald-700"
-                  : "bg-linear-to-r from-[#0d4db0] to-indigo-700 hover:-translate-y-0.5 hover:shadow-xl cursor-pointer"
-              } disabled:cursor-not-allowed disabled:opacity-70`}
+            <section
+              aria-labelledby="attendance-section"
+              className="relative overflow-hidden rounded-[1.85rem] border border-slate-200/85 bg-white/92 p-4 shadow-[0_18px_48px_rgba(15,23,42,0.08)] sm:p-5"
             >
-              {loading
-                ? t.saving
-                : sheetLoading
-                ? t.checkingAttendance
-                : confirmed
-                ? t.cardTitleConfirmed
-                : !attendanceActive
-                ? t.attendanceInactive
-                : t.confirmAttendance}
-            </button>
+              <div className="pointer-events-none absolute -right-20 bottom-0 h-48 w-48 rounded-full bg-blue-100/45 blur-3xl" />
+
+              <div className="relative">
+                <div className="mb-5 flex items-start gap-3.5">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-blue-100 bg-blue-50 text-[#0d4db0] shadow-sm">
+                    <UserCheck size={19} />
+                  </div>
+
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-black uppercase tracking-[0.22em] text-blue-600">
+                      {loggedInUserState ? t.yourInformation : t.accountAccess}
+                    </p>
+                    <h3
+                      id="attendance-section"
+                      className="mt-1 text-lg font-black tracking-[-0.025em] text-slate-950"
+                    >
+                      {t.attendanceSectionTitle}
+                    </h3>
+                    <p className="mt-1.5 text-sm leading-6 text-slate-500">
+                      {t.attendanceSectionDescription}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="rounded-[1.45rem] border border-slate-200/80 bg-linear-to-br from-slate-50 via-white to-blue-50/45 p-4 shadow-[0_8px_22px_rgba(15,23,42,0.045)]">
+                  {profileLoading ? (
+                    <p className="text-sm text-slate-500">
+                      {t.checkingAccount}
+                    </p>
+                  ) : loggedInUserState ? (
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 shadow-sm">
+                        <UserCheck size={20} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">
+                          {t.signedIn}
+                        </p>
+                        <p className="mt-1 text-sm leading-6 text-slate-500">
+                          {t.autoFilled}
+                          {autoFilledName
+                            ? ` ${isSpanish ? "para" : "for"} ${autoFilledName}`
+                            : ""}
+                          . {t.reviewConfirm}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-4">
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">
+                          {t.continueGuestOrSignIn}
+                        </p>
+                        <p className="mt-1 text-sm leading-6 text-slate-500">
+                          {t.guestText}
+                        </p>
+                      </div>
+
+                      <Link
+                        href={`/login?redirect=/check-in/${event?.id}`}
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-blue-200 bg-white px-4 py-3.5 text-sm font-bold text-blue-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-50 hover:shadow-md"
+                      >
+                        <LogIn size={16} />
+                        <span>{t.signIn}</span>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+
+                {!profileLoading && !loggedInUserState && (
+                  <div className="relative my-5">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-slate-200" />
+                    </div>
+                    <div className="relative flex justify-center">
+                      <span className="rounded-full border border-slate-200 bg-white px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400 shadow-sm">
+                        {t.orContinueGuest}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-5">
+                  <div className="mb-3 flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#0d4db0]" />
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
+                      {loggedInUserState
+                        ? t.yourInformation
+                        : t.guestInformation}
+                    </p>
+                  </div>
+
+                  <div className="space-y-3 rounded-[1.45rem] border border-slate-200/80 bg-white p-4 shadow-[0_10px_24px_rgba(15,23,42,0.05)] sm:p-5">
+                    <FloatingLabelInput
+                      id="name"
+                      name="name"
+                      label={t.fullName}
+                      value={formData.name}
+                      onChange={handleChange}
+                      type="text"
+                    />
+                    <FloatingLabelInput
+                      id="email"
+                      name="email"
+                      label={t.email}
+                      value={formData.email}
+                      onChange={handleChange}
+                      type="email"
+                    />
+                    <FloatingLabelInput
+                      id="phone"
+                      name="phone"
+                      label={t.phone}
+                      value={formData.phone}
+                      onChange={handleChange}
+                      type="tel"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleConfirmAttendance}
+                  disabled={
+                    loading || sheetLoading || !attendanceActive || confirmed
+                  }
+                  className="group relative mt-5 inline-flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-2xl border border-white/20 bg-[linear-gradient(110deg,#0d4db0_0%,#2563eb_48%,#17468f_100%)] px-5 py-4 text-sm font-bold text-white shadow-[0_18px_42px_rgba(13,77,176,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_55px_rgba(13,77,176,0.40)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+                >
+                  <span className="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                  <span className="relative">
+                    {loading
+                      ? t.saving
+                      : sheetLoading
+                        ? t.checkingAttendance
+                        : confirmed
+                          ? t.cardTitleConfirmed
+                          : !attendanceActive
+                            ? t.attendanceInactive
+                            : t.confirmAttendance}
+                  </span>
+                </button>
+              </div>
+            </section>
           )}
 
-          {/* View Calendar button */}
           {confirmed && (
-            <Link
-              href="/events"
-              className={`${
-                confirmed ? "" : "mt-6"
-              }  inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-green-600 to-emerald-700 
-                px-5 py-3.5 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl`}
-            >
-              <CalendarDays size={17} />
-              {t.viewCalendar}
-            </Link>
+            <section className="rounded-[1.75rem] border border-emerald-100 bg-linear-to-br from-emerald-50 via-white to-teal-50/70 p-4 shadow-[0_14px_36px_rgba(5,150,105,0.10)] sm:p-5">
+              <div className="mb-4 flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                  <CheckCircle2 size={20} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-900">
+                    {t.cardTitleConfirmed}
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-slate-500">
+                    {t.cardTextConfirmed}
+                  </p>
+                </div>
+              </div>
+
+              <Link
+                href="/events"
+                className="group relative inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl border border-white/20 bg-linear-to-r from-emerald-600 via-green-600 to-teal-700 px-5 py-4 text-sm font-bold text-white shadow-[0_18px_42px_rgba(5,150,105,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_55px_rgba(5,150,105,0.38)]"
+              >
+                <CalendarDays size={17} />
+                {t.viewCalendar}
+              </Link>
+            </section>
           )}
         </div>
       </div>

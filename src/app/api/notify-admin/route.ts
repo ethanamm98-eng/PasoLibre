@@ -71,7 +71,9 @@ export async function POST(req: Request) {
       footer: isSpanish
         ? "Este mensaje fue generado automáticamente desde Paso Libre."
         : "This message was generated automatically from Paso Libre.",
-      rights: isSpanish ? "Todos los derechos reservados." : "All rights reserved.",
+      rights: isSpanish
+        ? "Todos los derechos reservados."
+        : "All rights reserved.",
       subject: isSpanish
         ? `Nueva persona pendiente de aprobación: ${firstName} ${lastName}`
         : `New User Pending Approval: ${firstName} ${lastName}`,
@@ -89,7 +91,7 @@ export async function POST(req: Request) {
           success: false,
           message: copy.missingFields,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -102,7 +104,7 @@ export async function POST(req: Request) {
 
     const adminDashboardUrl = `${siteUrl}/account-manager`;
 
-    const logoUrl = `${supabaseUrl}/storage/v1/object/public/email-assets/logo-title_nobg.png`;
+    const logoUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/email-assets/logo-title.png`;
 
     const html = `
       <div style="margin:0;padding:0;background-color:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
@@ -153,14 +155,14 @@ export async function POST(req: Request) {
                       <tr>
                         <td style="padding:6px 0;font-size:13px;color:#374151;">
                           <strong>${copy.phone}:</strong> ${escapeHtml(
-                            phone || copy.notProvided
+                            phone || copy.notProvided,
                           )}
                         </td>
                       </tr>
                       <tr>
                         <td style="padding:6px 0;font-size:13px;color:#374151;">
                           <strong>${copy.pendingSignupId}:</strong> ${escapeHtml(
-                            pendingSignupId
+                            pendingSignupId,
                           )}
                         </td>
                       </tr>
@@ -214,7 +216,7 @@ export async function POST(req: Request) {
           (error instanceof Error && error.message) ||
           "Unable to send admin notification.",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

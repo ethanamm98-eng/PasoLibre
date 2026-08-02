@@ -35,10 +35,11 @@ type ProfileData = {
   role: string | null;
   is_approved: boolean;
   account_status: "active" | "suspended" | null;
+  language_preference: "en" | "es" | null;
 };
 
 export default function Navbar() {
-  const { t, language } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -118,6 +119,7 @@ export default function Navbar() {
         setDisplayName(fullName);
         setUserType(resolvedType);
         setAuthenticatedProfile(profile);
+        setLanguage(profile?.language_preference || "en");
       } catch (error) {
         console.error("Navbar auth load error:", error);
         setIsSignedIn(false);

@@ -53,7 +53,7 @@ const ContactForm: React.FC = () => {
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
 
@@ -104,14 +104,14 @@ const ContactForm: React.FC = () => {
 
       setSuccessMessage(
         t?.successMessage ||
-          "Message sent successfully. We’ll be in touch soon."
+          "Message sent successfully. We’ll be in touch soon.",
       );
       setFormData(initialFormData);
     } catch (error: unknown) {
       setErrorMessage(
         (error as Error)?.message ||
           t?.errorMessage ||
-          "Unable to send message."
+          "Unable to send message.",
       );
     } finally {
       setSubmitting(false);
@@ -121,7 +121,7 @@ const ContactForm: React.FC = () => {
   if (!isMounted) return null;
 
   return (
-    <section className="relative text-white overflow-hidden min-h-[95vh] flex items-center justify-center my-auto py-20 sm:py-24 md:py-0">
+    <section className="relative text-white overflow-hidden min-h-[95vh] flex items-center justify-center my-auto py-24 sm:py-24 md:py-0">
       <motion.video
         autoPlay
         muted
@@ -281,12 +281,32 @@ const ContactForm: React.FC = () => {
           <motion.button
             type="submit"
             disabled={submitting}
-            className="relative px-8 py-3 rounded-full font-semibold flex items-center justify-center gap-2 cursor-pointer
-            bg-linear-to-r from-[#0d4db0] to-[#3b82f6] text-white shadow-lg
-            hover:from-[#0d4db0] hover:to-[#0d4db0] transition-all duration-500 mx-auto mt-6 disabled:cursor-not-allowed disabled:opacity-70"
+            whileHover={submitting ? undefined : { y: -2, scale: 1.015 }}
+            whileTap={submitting ? undefined : { scale: 0.985 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="group relative mx-auto mt-6 flex min-w-56 cursor-pointer items-center justify-center gap-3 overflow-hidden rounded-2xl border border-white/20 bg-linear-to-r from-[#0d4db0] via-[#2563eb] to-[#3b82f6] px-7 py-3.5 text-sm font-semibold tracking-wide text-white shadow-[0_14px_35px_rgba(13,77,176,0.35)] transition-all duration-300 hover:shadow-[0_18px_45px_rgba(13,77,176,0.5)] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black/50 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
           >
-            <TfiWrite className="w-8 h-8 p-2 rounded-xl bg-sky-200/30" />
-            {submitting ? t.sending || "Sending..." : t.send || "Send Message"}
+            <span className="absolute inset-0 translate-x-[-120%] bg-linear-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-[120%]" />
+
+            <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/15 shadow-inner backdrop-blur-sm transition-transform duration-300 group-hover:rotate-[-4deg] group-hover:scale-105">
+              {submitting ? (
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+              ) : (
+                <TfiWrite className="h-4 w-4" />
+              )}
+            </span>
+
+            <span className="relative">
+              {submitting
+                ? t.sending || "Sending..."
+                : t.send || "Send Message"}
+            </span>
+
+            {!submitting && (
+              <span className="relative text-lg leading-none transition-transform duration-300 group-hover:translate-x-1">
+                →
+              </span>
+            )}
           </motion.button>
         </form>
       </motion.div>

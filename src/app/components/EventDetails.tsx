@@ -14,7 +14,7 @@ import { FaGift, FaShirt } from "react-icons/fa6";
 import { SiGoogleforms } from "react-icons/si";
 import { FiRepeat } from "react-icons/fi";
 import { GiTeacher } from "react-icons/gi";
-import { PauseCircle, PlayCircle } from "lucide-react";
+import { BookOpenText, PauseCircle, PlayCircle, Sparkles } from "lucide-react";
 
 import { supabase } from "../lib/supabase/supabaseClient";
 import { useLanguage } from "../context/language";
@@ -62,7 +62,7 @@ export default function EventDetails({
   const locale = isSpanish ? "es-PR" : "en-US";
 
   const [playingPreviewUrl, setPlayingPreviewUrl] = useState<string | null>(
-    null
+    null,
   );
   const [eventStatus, setEventStatus] = useState(event?.status || "");
   const [publishingEvent, setPublishingEvent] = useState(false);
@@ -115,6 +115,32 @@ export default function EventDetails({
       : "This event is not published yet. Review it and publish it when it is ready.",
     publishEvent: isSpanish ? "Publicar evento" : "Publish event",
     publishingEvent: isSpanish ? "Publicando..." : "Publishing...",
+    soundtrack: isSpanish ? "Banda sonora del evento" : "Event soundtrack",
+    soundtrackDescription: isSpanish
+      ? "Una canción seleccionada especialmente para este evento."
+      : "A song selected especially for this event.",
+    curatedForEvent: isSpanish
+      ? "Seleccionada para este evento"
+      : "Curated for this event",
+    listenPreview: isSpanish ? "Escuchar" : "Play",
+    pausePreview: isSpanish ? "Pausar" : "Pause",
+    nowPlaying: isSpanish ? "Reproduciendo" : "Now playing",
+    aboutEvent: isSpanish ? "Sobre este evento" : "About this event",
+    eventStory: isSpanish
+      ? "Conoce la historia, intención y experiencia detrás de este encuentro."
+      : "Discover the story, intention, and experience behind this gathering.",
+    eventEssentials: isSpanish ? "Información esencial" : "Event essentials",
+    eventEssentialsDescription: isSpanish
+      ? "Todo lo que necesitas saber antes de llegar."
+      : "Everything you need to know before you arrive.",
+    dateLabel: isSpanish ? "Fecha" : "Date",
+    timeLabel: isSpanish ? "Hora" : "Time",
+    locationLabel: isSpanish ? "Ubicación" : "Location",
+    recurrenceLabel: isSpanish ? "Frecuencia" : "Schedule",
+    dressCodeLabel: isSpanish ? "Vestimenta" : "Dress code",
+    donationLabel: isSpanish ? "Donativo" : "Donation",
+    registrationLabel: isSpanish ? "Registro" : "Registration",
+    openMap: isSpanish ? "Abrir mapa" : "Open map",
   };
 
   const isDraftEvent = String(eventStatus || "").toLowerCase() === "draft";
@@ -144,7 +170,7 @@ export default function EventDetails({
   const getLocalizedText = (
     en?: string | null,
     es?: string | null,
-    fallback = ""
+    fallback = "",
   ) => {
     if (isSpanish) return es?.trim() || en?.trim() || fallback;
     return en?.trim() || es?.trim() || fallback;
@@ -155,13 +181,13 @@ export default function EventDetails({
   const eventDescription = getLocalizedText(
     event?.description_en,
     event?.description_es,
-    t.noDescription
+    t.noDescription,
   );
 
   const eventDetails = getLocalizedText(
     event?.details_en,
     event?.details_es,
-    ""
+    "",
   );
 
   const imageHeight = Math.max(Number(event?.image_height || 320), 320);
@@ -422,13 +448,9 @@ export default function EventDetails({
       .join(", ") || t.locationTbd;
 
   return (
-    <div
-      className={`relative flex h-full flex-col overflow-hidden rounded-4xl border transition-all duration-700 ${
-        confirmed
-          ? "border-green-300 bg-linear-to-br from-green-50 via-white to-blue-50 shadow-[0_30px_90px_rgba(16,185,129,0.18)] scale-[1.01]"
-          : "border-white/80 bg-linear-to-br from-white via-slate-50 to-blue-50 shadow-[0_24px_75px_rgba(15,23,42,0.10)]"
-      }`}
-    >
+    <div className="relative flex h-full min-w-0 flex-col">
+      <div className="pointer-events-none absolute -left-12 top-24 h-48 w-48 rounded-full bg-[#5BCEFA]/10 blur-3xl" />
+      <div className="pointer-events-none absolute right-0 top-1/2 h-40 w-40 rounded-full bg-[#F5A9B8]/10 blur-3xl" />
       {isDraftEvent && (
         <div className="relative z-20 border-b border-amber-200 bg-linear-to-r from-amber-50 via-orange-50 to-yellow-50 px-5 py-4 md:px-7">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -468,9 +490,9 @@ export default function EventDetails({
       )}
 
       <div
-        className="relative w-full overflow-hidden"
+        className="relative w-full overflow-hidden rounded-[1.75rem] border border-white/80 shadow-[0_24px_65px_rgba(58,76,105,0.16)] sm:rounded-[2rem] -mb-4"
         style={{
-          height: `${imageHeight}px`,
+          height: `${Math.min(imageHeight, 420)}px`,
         }}
       >
         <Image
@@ -485,71 +507,25 @@ export default function EventDetails({
           priority
         />
 
-        <div className="absolute inset-0 bg-linear-to-t from-slate-950/75 via-slate-950/20 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-slate-950/95 via-slate-950/35 to-slate-950/5" />
 
-        <div className="absolute left-5 right-5 top-5 flex items-start justify-between gap-2">
+        <div className="absolute left-4 right-4 top-4 flex items-start justify-between gap-3 sm:left-5 sm:right-5 sm:top-5">
           <div
-            className="mb-auto inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/90 px-3 py-1.5 text-xs font-bold 
+            className="mb-auto inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/92 px-3.5 py-2 text-xs font-black shadow-[0_10px_24px_rgba(15,23,42,0.12)] backdrop-blur-xl 
             capitalize text-slate-700 shadow-sm backdrop-blur-sm max-w-[45vw] md:max-w-none"
           >
             <FaTag className="text-blue-600" />
             <span className="truncate">{formatType(event.type)}</span>{" "}
           </div>
-          {event.audio_enabled && event.audio_preview_url && (
-            <div
-              className="mb-5 min-w-0 max-w-[52vw] md:max-w-none rounded-[1.35rem] border border-blue-100 bg-linear-to-br relative left-4
-              from-blue-50/90 via-white/80 to-indigo-50/85 px-2.5 py-2 md:px-4 md:py-3 shadow-sm scale-90 md:scale-100"
-            >
-              <div className="flex items-center gap-3">
-                {event.audio_artwork_url && (
-                  <Image
-                    src={event.audio_artwork_url}
-                    alt={event.audio_track_name || "Event audio"}
-                    className="h-8 w-8 md:h-12 md:w-12 rounded-xl object-cover shadow-sm"
-                    width={48}
-                    height={48}
-                  />
-                )}
-
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[11px] md:text-sm font-semibold text-slate-900 mb-0">
-                    {event.audio_track_name || "Event audio"}
-                  </p>
-                  <p className="truncate text-[10px] md:text-xs text-slate-500">
-                    {event.audio_artist_name || ""}
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setPlayingPreviewUrl((prev) =>
-                      prev === event.audio_preview_url
-                        ? null
-                        : event.audio_preview_url || null
-                    )
-                  }
-                  className="inline-flex h-8 w-8 md:h-11 md:w-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-blue-600 text-white shadow-lg 
-                  shadow-blue-900/15 transition hover:-translate-y-0.5 hover:bg-blue-700"
-                >
-                  {playingPreviewUrl === event.audio_preview_url ? (
-                    <PauseCircle size={22} />
-                  ) : (
-                    <PlayCircle size={22} />
-                  )}
-                </button>
-              </div>
-            </div>
-          )}
         </div>
 
-        <div className="absolute inset-x-0 bottom-0 p-5 md:p-7">
+        <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
           <div className="max-w-3xl">
             <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-blue-100">
               {t.event}
             </p>
 
-            <h1 className="text-3xl font-bold tracking-tight text-white drop-shadow-sm md:text-4xl">
+            <h1 className="text-3xl font-bold tracking-[-0.045em] text-white drop-shadow-lg sm:text-5xl">
               {t.eventName}
             </h1>
 
@@ -569,61 +545,247 @@ export default function EventDetails({
         )}
       </div>
 
-      <div className="flex flex-1 flex-col p-5 md:p-7">
-        <div
-          className="prose prose-sm max-w-none text-slate-600 md:prose-base"
-          dangerouslySetInnerHTML={{
-            __html: eventDescription || t.noDescription,
-          }}
-        />
+      <div className="flex flex-1 flex-col p-5 sm:p-7 lg:p-5">
+        <section className="relative overflow-hidden rounded-[1.75rem] px-1 py-6 sm:px-2 sm:py-7">
+          <div className="pointer-events-none absolute inset-0 " />
+          <div className="pointer-events-none absolute -left-12 -top-14 h-36 w-36 rounded-full" />
+          <div className="pointer-events-none absolute -bottom-16 right-0 h-40 w-40" />
 
-        <div className="mt-6 grid grid-cols-1 gap-3 text-sm text-slate-700 md:grid-cols-2">
-          <InfoTile
-            icon={<FaCalendarAlt />}
-            label={formatLocalizedDate(event.date)}
-          />
+          <div className="relative">
+            <div className="mb-5 flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white/80 text-sky-700 shadow-[0_10px_28px_rgba(91,206,250,0.14)] ring-1 ring-white/90 backdrop-blur-xl">
+                <BookOpenText className="h-4 w-4" />
+              </div>
 
-          <InfoTile
-            icon={<FaClock />}
-            label={formatLocalizedTime(event.time)}
-          />
+              <div className="min-w-0">
+                <div className="flex justify-center items-center gap-2">
+                  <p className="text-[12px] font-black uppercase tracking-[0.24em] text-sky-700 my-auto">
+                    {t.aboutEvent}
+                  </p>
+                  <Sparkles className="h-3.5 w-3.5 text-[#F5A9B8]" />
+                </div>
+              </div>
+            </div>
 
-          {(hasLocation || event?.location_url) && (
-            <InfoTile
-              icon={<FaMapMarkerAlt />}
-              label={`${locationText}${
-                event.zip_code ? ` • ${event.zip_code}` : ""
-              }`}
-            />
-          )}
+            <div className="relative pl-5 sm:pl-6">
+              <span className="absolute bottom-0 left-0 top-0 w-px bg-gradient-to-b from-[#5BCEFA] via-slate-200 to-[#F5A9B8]" />
+              <span className="absolute -left-[3px] top-1 h-2 w-2 rounded-full bg-[#5BCEFA] shadow-[0_0_14px_rgba(91,206,250,0.65)]" />
 
-          {recurrenceText && (
-            <InfoTile icon={<FiRepeat />} label={recurrenceText} />
-          )}
+              <div
+                className="prose prose-sm max-w-none text-slate-600 prose-p:leading-7 prose-p:tracking-[-0.01em] prose-strong:text-slate-900 prose-a:font-semibold prose-a:text-sky-700 md:prose-base md:prose-p:leading-8"
+                dangerouslySetInnerHTML={{
+                  __html: eventDescription || t.noDescription,
+                }}
+              />
+            </div>
+          </div>
+        </section>
 
-          {!!event.dress_code && (
-            <InfoTile
-              icon={<FaShirt />}
-              label={`${t.dressCode}: ${event.dress_code}`}
-            />
-          )}
+        {event.audio_enabled && event.audio_preview_url && (
+          <section
+            className="relative mt-7 overflow-hidden rounded-[1.75rem] border border-white/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.96),rgba(240,249,255,0.94)_42%,rgba(253,242,248,0.92))] p-2
+          shadow-[0_18px_48px_rgba(91,206,250,0.14)]"
+          >
+            <div className="pointer-events-none absolute -left-10 -top-12 h-36 w-36 rounded-full bg-[#5BCEFA]/20 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-14 -right-8 h-40 w-40 rounded-full bg-[#F5A9B8]/20 blur-3xl" />
 
-          {!!event.price && (
-            <InfoTile
-              icon={<FaGift />}
-              label={`${t.suggestedDonation}: $${Number(event.price).toFixed(
-                2
-              )}`}
-            />
-          )}
+            <div className="relative">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+                <div className="relative mx-auto shrink-0 sm:mx-0">
+                  <div
+                    className={`absolute inset-0 rounded-[1.5rem] bg-gradient-to-br from-[#5BCEFA]/55 via-white to-[#F5A9B8]/55 blur-xl transition-opacity duration-500 ${
+                      playingPreviewUrl === event.audio_preview_url
+                        ? "opacity-100"
+                        : "opacity-55"
+                    }`}
+                  />
 
-          {event.include_form && (
-            <InfoTile icon={<SiGoogleforms />} label={t.includesForm} blue />
-          )}
-        </div>
+                  {event.audio_artwork_url ? (
+                    <Image
+                      src={event.audio_artwork_url}
+                      alt={event.audio_track_name || t.soundtrack}
+                      className={`relative h-24 w-24 rounded-[1.4rem] object-cover shadow-[0_16px_35px_rgba(15,23,42,0.18)] ring-1 ring-white/90 sm:h-28 sm:w-28 ${
+                        playingPreviewUrl === event.audio_preview_url
+                          ? "animate-[spin_18s_linear_infinite]"
+                          : ""
+                      }`}
+                      width={112}
+                      height={112}
+                    />
+                  ) : (
+                    <div className="relative flex h-24 w-24 items-center justify-center rounded-[1.4rem] bg-gradient-to-br from-[#5BCEFA] via-white to-[#F5A9B8] shadow-[0_16px_35px_rgba(15,23,42,0.16)] sm:h-28 sm:w-28">
+                      <PlayCircle className="h-10 w-10 text-slate-700/80" />
+                    </div>
+                  )}
+
+                  {playingPreviewUrl === event.audio_preview_url && (
+                    <div className="absolute -bottom-2 -right-2 flex h-9 items-end gap-0.5 rounded-full border border-white/90 bg-slate-950 px-2.5 py-2 shadow-lg">
+                      {[12, 18, 9, 16].map((height, index) => (
+                        <span
+                          key={index}
+                          className="w-1 animate-pulse rounded-full bg-white"
+                          style={{
+                            height: `${height}px`,
+                            animationDelay: `${index * 120}ms`,
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="min-w-0 flex-1 text-center sm:text-left">
+                  <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+                    <span className="text-[10px] font-black uppercase tracking-[0.24em] text-sky-700">
+                      {t.soundtrack}
+                    </span>
+
+                    {playingPreviewUrl === event.audio_preview_url && (
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-950 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-white">
+                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#5BCEFA]" />
+                        {t.nowPlaying}
+                      </span>
+                    )}
+                  </div>
+
+                  <h3 className="mt-2 truncate text-xl font-black tracking-[-0.03em] text-slate-900 sm:text-2xl">
+                    {event.audio_track_name || t.soundtrack}
+                  </h3>
+
+                  <p className="mt-1 truncate text-sm font-semibold text-slate-500 mb-1">
+                    {event.audio_artist_name || t.curatedForEvent}
+                  </p>
+
+                  {/* <p className="mt-3 text-sm leading-6 text-slate-500">
+                    {t.soundtrackDescription}
+                  </p> */}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPlayingPreviewUrl((previousUrl) =>
+                        previousUrl === event.audio_preview_url
+                          ? null
+                          : event.audio_preview_url || null,
+                      )
+                    }
+                    className="group mt-1 inline-flex min-h-12 w-full cursor-pointer items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-[#5BCEFA] via-[#8fddfb] to-[#F5A9B8] px-5 py-3.5 text-sm font-black text-slate-900 shadow-[0_14px_30px_rgba(91,206,250,0.24)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(245,169,184,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 sm:w-auto"
+                    aria-label={
+                      playingPreviewUrl === event.audio_preview_url
+                        ? t.pausePreview
+                        : t.listenPreview
+                    }
+                  >
+                    {playingPreviewUrl === event.audio_preview_url ? (
+                      <PauseCircle className="h-5 w-5 transition-transform group-hover:scale-110" />
+                    ) : (
+                      <PlayCircle className="h-5 w-5 transition-transform group-hover:scale-110" />
+                    )}
+
+                    {playingPreviewUrl === event.audio_preview_url
+                      ? t.pausePreview
+                      : t.listenPreview}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* All Details Section */}
+        <section className="relative mt-8 overflow-hidden">
+          <div className="pointer-events-none absolute -left-16 top-10 h-40 w-40" />
+          <div className="pointer-events-none absolute -right-14 bottom-0 h-40 w-40l" />
+
+          <div className="relative">
+            <div className="mb-5 flex items-start gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/90 text-sky-700 shadow-[0_10px_26px_rgba(91,206,250,0.14)] ring-1 ring-white">
+                <FaCalendarAlt className="text-sm" />
+              </div>
+
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="text-[10px] font-black uppercase tracking-[0.24em] text-sky-700">
+                    {t.eventEssentials}
+                  </p>
+                  <Sparkles className="h-3.5 w-3.5 text-[#F5A9B8]" />
+                </div>
+                <p className="mt-1 text-sm leading-5 text-slate-500">
+                  {t.eventEssentialsDescription}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <InfoTile
+                icon={<FaCalendarAlt />}
+                eyebrow={t.dateLabel}
+                value={formatLocalizedDate(event.date)}
+                tone="sky"
+              />
+
+              <InfoTile
+                icon={<FaClock />}
+                eyebrow={t.timeLabel}
+                value={formatLocalizedTime(event.time)}
+                tone="pink"
+              />
+
+              {(hasLocation || event?.location_url) && (
+                <InfoTile
+                  icon={<FaMapMarkerAlt />}
+                  eyebrow={t.locationLabel}
+                  value={`${locationText}${
+                    event.zip_code ? ` • ${event.zip_code}` : ""
+                  }`}
+                  tone="violet"
+                  wide
+                  href={event.location_url || undefined}
+                  actionLabel={t.openMap}
+                />
+              )}
+
+              {recurrenceText && (
+                <InfoTile
+                  icon={<FiRepeat />}
+                  eyebrow={t.recurrenceLabel}
+                  value={recurrenceText}
+                  tone="sky"
+                />
+              )}
+
+              {!!event.dress_code && (
+                <InfoTile
+                  icon={<FaShirt />}
+                  eyebrow={t.dressCodeLabel}
+                  value={event.dress_code}
+                  tone="pink"
+                />
+              )}
+
+              {!!event.price && (
+                <InfoTile
+                  icon={<FaGift />}
+                  eyebrow={t.donationLabel}
+                  value={`$${Number(event.price).toFixed(2)}`}
+                  tone="violet"
+                />
+              )}
+
+              {event.include_form && (
+                <InfoTile
+                  icon={<SiGoogleforms />}
+                  eyebrow={t.registrationLabel}
+                  value={t.includesForm}
+                  tone="sky"
+                />
+              )}
+            </div>
+          </div>
+        </section>
 
         {!!eventDetails && (
-          <div className="mt-5 rounded-[1.35rem] bg-white/85 px-4 py-4 backdrop-blur-sm">
+          <div className="mt-6 rounded-[1.5rem] border border-slate-200/80 bg-linear-to-br from-slate-50 via-white to-blue-50/40 px-5 py-5 shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
               {t.additionalDetails}
             </p>
@@ -637,7 +799,7 @@ export default function EventDetails({
         )}
 
         {(!!normalizedHosts.length || !!normalizedIntructors.length) && (
-          <div className="mt-5 grid grid-cols-1 gap-3 rounded-3xl backdrop-blur-sm sm:grid-cols-2">
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {!!normalizedHosts.length && (
               <PeopleCard
                 title={t.hostedBy}
@@ -660,7 +822,7 @@ export default function EventDetails({
           </div>
         )}
 
-        <div className="mt-6 rounded-[1.35rem] border-blue-100 bg-linear-to-br from-blue-50 via-white to-slate-50 p-4">
+        <div className="mt-7 rounded-[1.5rem] border border-blue-100/80 bg-linear-to-br from-blue-50 via-white to-indigo-50/60 p-5 shadow-[0_12px_32px_rgba(37,99,235,0.08)] sm:p-6">
           <div className="mb-3 flex items-center justify-between gap-4">
             <h4 className="text-sm font-semibold text-slate-900">
               {t.participants}
@@ -718,19 +880,6 @@ export default function EventDetails({
             )}
           </div>
         </div>
-
-        <div className="mt-4 flex flex-col gap-2 text-sm">
-          {event.location_url && (
-            <a
-              href={event.location_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex w-fit rounded-full border border-blue-300 bg-blue-50 px-4 py-2 font-semibold text-blue-700 transition hover:-translate-y-0.5 hover:bg-blue-100"
-            >
-              {t.viewLocation}
-            </a>
-          )}
-        </div>
       </div>
     </div>
   );
@@ -738,30 +887,89 @@ export default function EventDetails({
 
 function InfoTile({
   icon,
-  label,
-  blue = false,
+  eyebrow,
+  value,
+  tone = "sky",
+  wide = false,
+  href,
+  actionLabel,
 }: {
   icon: React.ReactNode;
-  label: string;
-  blue?: boolean;
+  eyebrow: string;
+  value: string;
+  tone?: "sky" | "pink" | "violet";
+  wide?: boolean;
+  href?: string;
+  actionLabel?: string;
 }) {
+  const toneClasses = {
+    sky: {
+      icon: "bg-sky-50 text-sky-700 ring-sky-100",
+      accent: "from-[#5BCEFA] to-sky-400",
+      eyebrow: "text-sky-700",
+      action: "text-sky-700 hover:bg-sky-50",
+    },
+    pink: {
+      icon: "bg-pink-50 text-pink-700 ring-pink-100",
+      accent: "from-[#F5A9B8] to-pink-400",
+      eyebrow: "text-pink-700",
+      action: "text-pink-700 hover:bg-pink-50",
+    },
+    violet: {
+      icon: "bg-violet-50 text-violet-700 ring-violet-100",
+      accent: "from-violet-400 to-[#F5A9B8]",
+      eyebrow: "text-violet-700",
+      action: "text-violet-700 hover:bg-violet-50",
+    },
+  }[tone];
+
   return (
-    <div className="flex items-start gap-3 rounded-2xl bg-white/80 px-4 py-3">
+    <article
+      className={`group relative overflow-hidden rounded-[1.45rem] border border-white/90 bg-white/72 p-4 shadow-[0_10px_28px_rgba(15,23,42,0.045)] backdrop-blur-xl transition duration-300 hover:-translate-y-0.5 hover:bg-white/90 hover:shadow-[0_16px_36px_rgba(15,23,42,0.075)] ${
+        wide ? "sm:col-span-2" : ""
+      }`}
+    >
       <span
-        className={`my-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${
-          blue ? "bg-blue-100 text-blue-700" : "bg-slate-100 text-blue-600"
-        }`}
-      >
-        {icon}
-      </span>
-      <span
-        className={`leading-6 ${
-          blue ? "font-semibold text-blue-700" : "my-auto text-slate-700"
-        }`}
-      >
-        {label}
-      </span>
-    </div>
+        className={`absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${toneClasses.accent}`}
+      />
+
+      <div className="flex items-start gap-3.5">
+        <span
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ring-1 transition-transform duration-300 group-hover:scale-105 ${toneClasses.icon}`}
+        >
+          {icon}
+        </span>
+
+        <div className="min-w-0 flex-1">
+          <p
+            className={`text-[9px] font-black uppercase tracking-[0.22em] ${toneClasses.eyebrow}`}
+          >
+            {eyebrow}
+          </p>
+
+          <p className="mt-1.5 text-sm font-semibold leading-6 text-slate-800 sm:text-[15px]">
+            {value}
+          </p>
+
+          {href && actionLabel && (
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`mt-3 inline-flex items-center rounded-xl px-2.5 py-1.5 text-xs font-black transition ${toneClasses.action}`}
+            >
+              {actionLabel}
+              <span
+                aria-hidden="true"
+                className="ml-1.5 transition-transform group-hover:translate-x-0.5"
+              >
+                →
+              </span>
+            </a>
+          )}
+        </div>
+      </div>
+    </article>
   );
 }
 
@@ -795,7 +1003,9 @@ function PeopleCard({
         };
 
   return (
-    <div className={`rounded-2xl border p-3 ${toneClasses.card}`}>
+    <div
+      className={`rounded-[1.5rem] border p-4 shadow-[0_10px_28px_rgba(15,23,42,0.05)] ${toneClasses.card}`}
+    >
       <div className="mb-2 flex items-center gap-2">
         <div
           className={`flex h-8 w-8 items-center justify-center rounded-xl shadow-sm ${toneClasses.icon}`}

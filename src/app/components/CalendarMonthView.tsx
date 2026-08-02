@@ -45,6 +45,7 @@ import {
   getScheduledOccurrenceDate,
   isOccurrenceExcluded,
 } from "../helpers/calendarMonth";
+import { sendAttendanceConfirmationEmail } from "../helpers/emails";
 
 const MonthView = ({
   events,
@@ -66,6 +67,7 @@ const MonthView = ({
   allMonthsSelected,
   allDaysSelected,
   onRangeSelect,
+  loadEvents,
 }: {
   events: SchedulerForm[];
   calendarMode: "admin" | "member";
@@ -87,6 +89,7 @@ const MonthView = ({
   allMonthsSelected?: boolean;
   allDaysSelected?: boolean;
   onRangeSelect?: (start: Date, end: Date) => void;
+  loadEvents?: any
 }) => {
   const router = useRouter();
   const { language } = useLanguage(); // es or en
@@ -619,6 +622,20 @@ const MonthView = ({
         },
       }));
 
+        const emailPayload = {
+          eventId: event?.id,
+          eventNameEn: event?.name_en,
+          eventNameEs: event?.name_es,
+          eventDate: event?.occurrenceDate || event?.date,
+          participantName: fullName.trim(),
+          participantEmail: email,
+          participantLanguagePreference:
+            profile?.language_preference || language || "en",
+          checkInUrl: `${window.location.origin}/check-in/${event.id}?occurrenceDate=${event.date}`,
+        }
+
+      await sendAttendanceConfirmationEmail(emailPayload);
+
       const eventName = getLocalizedEventName(event);
 
       Swal.fire({
@@ -1148,7 +1165,7 @@ const MonthView = ({
                             ? undefined
                             : colors.style
                         }
-                        className={`relative mt-1.5 w-full overflow-visible rounded-xl border px-2.5 py-2 text-left text-white transition-all duration-200 ${
+                        className={`relative mt-1.5 w-full overflow-hidden rounded-xl border px-2.5 py-2 text-left text-white transition-all duration-200 ${
                           isPastOccurrence
                             ? "cursor-default border-slate-300 bg-slate-400 opacity-60 grayscale hover:translate-y-0 hover:shadow-none"
                             : "cursor-pointer hover:-translate-y-0.5 hover:shadow-xl"
@@ -1725,6 +1742,7 @@ const MonthView = ({
           onClose={() => {
             if (!confirmingAttendance) setAttendanceEvent(null);
           }}
+          loadEvents={loadEvents}
         />
       )}
     </div>

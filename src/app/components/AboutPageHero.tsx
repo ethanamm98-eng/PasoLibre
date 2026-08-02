@@ -5,6 +5,12 @@ import { GoHeartFill } from "react-icons/go";
 import { useLanguage } from "../context/language";
 import { aboutTranslations } from "../lib/translations/about";
 
+// const ROUNDED_HEART_CLIP_PATH =
+//   "path('M56 106 C48 98 8 73 8 34 C8 14 22 3 38 3 C48 3 54 9 56 18 C58 9 64 3 74 3 C90 3 104 14 104 34 C104 73 64 98 56 106 Z')";
+
+const HEART_EMOJI_CLIP_PATH =
+  "path('M56 110 C48 104 4 74 4 38 C4 16 20 2 40 2 C49 2 55 9 56 20 C57 9 63 2 72 2 C92 2 108 16 108 38 C108 74 64 104 56 110 Z')";
+
 const AboutPageHero = () => {
   const { language } = useLanguage();
   const t = aboutTranslations[language];
@@ -70,11 +76,10 @@ const AboutPageHero = () => {
               : i === 1
               ? "right-32 top-[50%]"
               : "right-38 top-[38%]"
-          } w-28 h-28 scale-105 transition-transform duration-500 hover:scale-110 hover:opacity-100`}
+          } w-32 h-28 scale-105 transition-transform duration-500 hover:scale-110 hover:opacity-100`}
           style={{
             opacity: 0.7 - i * 0.1,
-            clipPath:
-              "path('M50 90 C20 65 0 45 0 25 C0 10 10 0 25 0 C35 0 45 6 50 15 C55 6 65 0 75 0 C90 0 100 10 100 25 C100 45 80 65 50 90 Z')",
+            clipPath: HEART_EMOJI_CLIP_PATH,
           }}
         >
           <Image
@@ -82,7 +87,7 @@ const AboutPageHero = () => {
             src={img.src}
             alt="heart"
             fill
-            className="object-cover object-bottom min-w-full min-h-full rounded-full"
+            className="object-cover object-bottom min-w-full min-h-full"
             // width={112} 
             // height={112}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

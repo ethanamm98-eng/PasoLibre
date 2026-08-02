@@ -1,16 +1,8 @@
 "use client";
+
 import React, { useState } from "react";
 
-const FloatingLabelTextarea = ({
-  id,
-  name,
-  label,
-  value,
-  onChange,
-  rows = 4,
-  maxLength,
-  disabled,
-}: {
+interface FloatingLabelTextareaProps {
   id: string;
   name: string;
   label: string;
@@ -19,39 +11,93 @@ const FloatingLabelTextarea = ({
   rows?: number;
   maxLength?: number;
   disabled?: boolean;
-}) => {
+}
+
+export default function FloatingLabelTextarea({
+  id,
+  name,
+  label,
+  value,
+  onChange,
+  rows = 5,
+  maxLength,
+  disabled,
+}: FloatingLabelTextareaProps) {
   const [isFocused, setIsFocused] = useState(false);
 
+  const floating = isFocused || value.length > 0;
+
   return (
-    <div className="mb-2 relative">
+    <div className="relative mb-3">
       <textarea
         id={id}
         name={name}
         value={value}
         onChange={onChange}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-        placeholder=" "
         rows={rows}
         maxLength={maxLength}
         disabled={disabled}
-        className={`w-full text-gray-800 px-3 py-2 border border-gray-400 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none ${
-          disabled ? "bg-gray-200 cursor-not-allowed" : "bg-white"
-        }`}
+        placeholder=" "
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+        className={`
+          w-full
+          resize-none
+          rounded-xl
+          border
+          px-4
+          pt-5
+          pb-3
+          text-[15px]
+          font-medium
+          leading-6
+          text-slate-800
+          shadow-sm
+          transition-all
+          duration-200
+
+          ${
+            disabled
+              ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
+              : "border-slate-300 bg-white hover:border-slate-400"
+          }
+
+          ${
+            !disabled &&
+            "focus:border-[#0d4db0] focus:ring-4 focus:ring-[#0d4db0]/10 focus:outline-none"
+          }
+        `}
       />
 
       <label
         htmlFor={id}
-        className={`absolute text-sm transition-all duration-500 left-3 px-1 bg-white pointer-events-none ${
-          isFocused || value
-            ? "-top-2 text-xs text-blue-600"
-            : "top-2.75 text-gray-500"
-        }`}
+        className={`
+          pointer-events-none
+          absolute
+          left-3
+          origin-left
+          rounded-full
+          bg-white
+          transition-all
+          duration-200
+
+          ${
+            floating
+              ? "-top-2 px-2 text-[11px] font-semibold text-[#0d4db0] shadow-sm"
+              : "top-4 px-1 text-sm font-medium text-slate-500"
+          }
+        `}
       >
         {label}
       </label>
+
+      {maxLength && (
+        <div className="mt-1 flex justify-end">
+          <span className="text-[11px] font-medium text-slate-400">
+            {value.length}/{maxLength}
+          </span>
+        </div>
+      )}
     </div>
   );
-};
-
-export default FloatingLabelTextarea;
+}

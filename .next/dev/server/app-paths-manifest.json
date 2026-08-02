@@ -1,6 +1,8 @@
 {
+  "/admin-announcements/page": "app/admin-announcements/page.js",
+  "/admin-dashboard/page": "app/admin-dashboard/page.js",
   "/api/event-attendance/route": "app/api/event-attendance/route.js",
-  "/check-in/[eventId]/page": "app/check-in/[eventId]/page.js",
+  "/attendance-report/page": "app/attendance-report/page.js",
   "/events/page": "app/events/page.js",
   "/page": "app/page.js"
 }

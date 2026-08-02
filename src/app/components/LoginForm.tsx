@@ -13,7 +13,7 @@ import PageLoader from "./elements/PageLoader";
 
 export default function LoginForm() {
   const router = useRouter();
-  const { language } = useLanguage(); // es or en
+  const { language, setLanguage } = useLanguage(); // es or en
   const isSpanish = language === "es";
 
   const t = {
@@ -246,9 +246,11 @@ export default function LoginForm() {
 
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("id, email, username, is_approved, account_status, role")
+        .select("id, email, username, is_approved, account_status, role, language_preference")
         .eq("id", data.user.id)
         .maybeSingle();
+
+        setLanguage(profile?.language_preference || "en");
 
       if (profileError) {
         await supabase.auth.signOut();
@@ -302,125 +304,150 @@ export default function LoginForm() {
   return (
     <div>
       {(redirecting || pageLoading) && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-sm">
           <div className="flex flex-col items-center">
             <PageLoader />
-            <p className="text-white text-sm font-light mt-4">
+            <p className="mt-4 text-sm font-medium text-white">
               {redirecting ? t.redirecting : t.loading}
             </p>
           </div>
         </div>
       )}
 
-      <div className="w-full max-w-md bg-white rounded-xl py-6 px-4 md:py-8 md:px-8 space-y-4 animate-fade-in relative z-10">
-        <h2 className="text-3xl font-bold text-center tracking-wider mb-1 bg-linear-to-r from-blue-500 to-blue-700 bg-clip-text text-transparent">
-          {t.signIn}
-        </h2>
+      <div className="relative z-10 w-full max-w-md overflow-hidden p-5">
+        <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full" />
+        <div className="pointer-events-none absolute -bottom-20 -left-16 h-44 w-44 rounded-full" />
+        <div className="pointer-events-none absolute inset-x-12 top-0 h-px" />
 
-        <p className="text-sm text-gray-500 text-center">{t.credentials}</p>
-
-        <form onSubmit={handleLogin} className="space-y-4.5">
-          <div>
-            <FloatingLabelInput
-              id="email"
-              name="email"
-              label={t.email}
-              type="text"
-              value={email}
-              autoComplete="username"
-              onChange={(e: { target: { value: SetStateAction<string> } }) =>
-                setEmail(e.target.value)
-              }
-              maxLength={80}
-              disabled={buttonLoading}
-            />
-            <AnimatePresence>
-              {errors.email && (
-                <motion.p
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className="text-xs text-red-500 mt-1"
-                >
-                  {errors.email}
-                </motion.p>
-              )}
-            </AnimatePresence>
+        <div className="relative">
+          <div className="flex items-center justify-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-sky-400 shadow-[0_0_14px_rgba(56,189,248,0.9)]" />
+            <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#0d4db0]">
+              {isSpanish ? "Bienvenido de nuevo" : "Welcome back"}
+            </p>
           </div>
 
-          <div>
-            <FloatingLabelInput
-              id="password"
-              name="password"
-              label={t.password}
-              type="password"
-              value={password}
-              autoComplete="current-password"
-              onChange={(e: { target: { value: SetStateAction<string> } }) =>
-                setPassword(e.target.value)
-              }
-              maxLength={80}
-              disabled={buttonLoading}
-            />
-            <AnimatePresence>
-              {errors.password && (
-                <motion.p
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className="text-xs text-red-500 mt-1"
-                >
-                  {errors.password}
-                </motion.p>
-              )}
-            </AnimatePresence>
+          <h2 className="mt-3 text-center text-3xl font-black tracking-[-0.045em] text-slate-950 sm:text-4xl">
+            {t.signIn}
+          </h2>
+
+          <p className="mx-auto mt-2 max-w-sm text-center text-sm leading-6 text-slate-500">
+            {t.credentials}
+          </p>
+
+          <div className="my-6 flex items-center justify-center gap-3" aria-hidden="true">
+            <span className="h-px w-16 bg-linear-to-r from-transparent via-blue-200 to-blue-200" />
+            <span className="h-2 w-2 rotate-45 rounded-[2px] border border-blue-200 bg-blue-50" />
+            <span className="h-px w-16 bg-linear-to-l from-transparent via-blue-200 to-blue-200" />
           </div>
 
-          {/* <div className="flex justify-center -mt-2">
+          <form onSubmit={handleLogin} className="space-y-5">
+            <div>
+              <FloatingLabelInput
+                id="email"
+                name="email"
+                label={t.email}
+                type="text"
+                value={email}
+                autoComplete="username"
+                onChange={(e: { target: { value: SetStateAction<string> } }) =>
+                  setEmail(e.target.value)
+                }
+                maxLength={80}
+                disabled={buttonLoading}
+              />
+
+              <AnimatePresence>
+                {errors.email && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="mt-1.5 flex items-start gap-2 rounded-xl border border-red-100 bg-red-50/80 px-3 py-2 text-xs font-medium leading-5 text-red-600"
+                  >
+                    <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" />
+                    <span>{errors.email}</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div>
+              <FloatingLabelInput
+                id="password"
+                name="password"
+                label={t.password}
+                type="password"
+                value={password}
+                autoComplete="current-password"
+                onChange={(e: { target: { value: SetStateAction<string> } }) =>
+                  setPassword(e.target.value)
+                }
+                maxLength={80}
+                disabled={buttonLoading}
+              />
+
+              <AnimatePresence>
+                {errors.password && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="mt-1.5 flex items-start gap-2 rounded-xl border border-red-100 bg-red-50/80 px-3 py-2 text-xs font-medium leading-5 text-red-600"
+                  >
+                    <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" />
+                    <span>{errors.password}</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div className="flex items-center justify-center gap-1 pt-1 text-center">
+              <p className="text-sm text-slate-500">{t.forgot}</p>
+              <button
+                type="button"
+                onClick={() => router.push("/reset-password")}
+                className="group inline-flex cursor-pointer items-center gap-1 text-sm font-bold text-[#0d4db0] transition hover:text-blue-700"
+              >
+                <span>{t.reset}</span>
+                <span className="transition-transform duration-200 group-hover:translate-x-0.5">
+                  →
+                </span>
+              </button>
+            </div>
+
+            <button
+              type="submit"
+              disabled={buttonLoading || pageLoading}
+              className="group relative inline-flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-2xl border border-white/20 bg-[linear-gradient(110deg,#0d4db0_0%,#2563eb_48%,#17468f_100%)] px-5 py-4 text-sm font-bold text-white shadow-[0_18px_42px_rgba(13,77,176,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_55px_rgba(13,77,176,0.40)] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
+            >
+              <span className="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+              <span className="relative">
+                {buttonLoading ? t.signingIn : t.signIn}
+              </span>
+            </button>
+          </form>
+
+          <div className="mt-7 rounded-[1.4rem] border border-slate-200/80 bg-linear-to-br from-slate-50 via-white to-blue-50/50 p-4 text-center shadow-[0_8px_22px_rgba(15,23,42,0.04)]">
+            <p className="text-sm text-slate-500">{t.noAccount}</p>
             <button
               type="button"
-              onClick={openResetModal}
-              className="cursor-pointer text-xs font-medium text-blue-600 transition hover:text-blue-700 hover:underline mx-auto"
+              onClick={() => router.push("/sign-up")}
+              className="group mt-2 inline-flex cursor-pointer items-center gap-1 text-sm font-bold text-[#0d4db0] transition hover:text-blue-700"
             >
-              Forgot password?
-            </button>
-          </div> */}
-          <div className="text-center pt-0">
-            <p className="text-sm text-gray-500 inline">{t.forgot}</p>
-            <button
-              type="button"
-              onClick={() => router.push("/reset-password")}
-              className="inline mt-1 ml-1 text-sm font-semibold text-blue-600 hover:underline cursor-pointer transition"
-            >
-              {t.reset}
+              <span>{t.signUp}</span>
+              <span className="transition-transform duration-200 group-hover:translate-x-0.5">
+                →
+              </span>
             </button>
           </div>
-
-          <button
-            type="submit"
-            disabled={buttonLoading || pageLoading}
-            className="cursor-pointer bg-linear-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white w-full py-3 font-semibold rounded shadow-md transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-          >
-            {buttonLoading ? t.signingIn : t.signIn}
-          </button>
-        </form>
-
-        <div className="text-center pt-3">
-          <p className="text-sm text-gray-500">{t.noAccount}</p>
-          <button
-            type="button"
-            onClick={() => router.push("/sign-up")}
-            className="mt-1 text-sm font-semibold text-blue-600 hover:underline cursor-pointer transition"
-          >
-            {t.signUp}
-          </button>
         </div>
       </div>
 
       <AnimatePresence>
         {resetOpen && (
           <motion.div
-            className="fixed inset-0 z-60 flex items-center justify-center bg-slate-950/60 px-4 backdrop-blur-sm"
+            className="fixed inset-0 z-60 flex items-center justify-center bg-slate-950/65 px-4 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -432,25 +459,42 @@ export default function LoginForm() {
               exit={{ opacity: 0, y: 18, scale: 0.96 }}
               transition={{ duration: 0.2 }}
               onMouseDown={(e) => e.stopPropagation()}
-              className="relative w-full max-w-md overflow-hidden rounded-3xl border border-white/70 bg-white shadow-2xl"
+              className="relative w-full max-w-md overflow-hidden rounded-[2rem] border border-white/80 bg-white shadow-[0_28px_75px_rgba(15,23,42,0.22)]"
             >
-              <div className="absolute inset-x-0 top-0 h-1.5 bg-linear-to-r from-blue-500 to-blue-700" />
+              <div className="absolute inset-x-0 top-0 h-1.5 bg-[linear-gradient(90deg,#0d4db0,#2563eb,#17468f)]" />
+              <div className="pointer-events-none absolute -right-14 -top-14 h-36 w-36 rounded-full bg-[#5BCEFA]/18 blur-3xl" />
 
               <button
                 type="button"
                 onClick={closeResetModal}
                 disabled={resetLoading}
-                className="absolute right-4 top-4 cursor-pointer rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed"
+                className="absolute right-4 top-4 z-10 cursor-pointer rounded-full p-2 text-slate-400 transition hover:bg-blue-50 hover:text-[#0d4db0] disabled:cursor-not-allowed"
               >
                 <X size={18} />
               </button>
 
-              <div className="px-7 pb-7 pt-9">
-                <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
-                  {resetSent ? <CheckCircle size={26} /> : <Mail size={26} />}
+              <div className="relative px-7 pb-7 pt-10">
+                <div className="relative mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-blue-100 bg-blue-50 text-[#0d4db0] shadow-[0_12px_28px_rgba(13,77,176,0.12)]">
+                  <div className="pointer-events-none absolute inset-0 rounded-[inherit] bg-linear-to-br from-white/75 via-transparent to-blue-100/50" />
+                  <span className="relative">
+                    {resetSent ? <CheckCircle size={26} /> : <Mail size={26} />}
+                  </span>
                 </div>
 
-                <h3 className="text-center text-2xl font-bold tracking-tight text-slate-900">
+                <div className="flex items-center justify-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-sky-400 shadow-[0_0_12px_rgba(56,189,248,0.8)]" />
+                  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-[#0d4db0]">
+                    {resetSent
+                      ? isSpanish
+                        ? "Correo enviado"
+                        : "Email sent"
+                      : isSpanish
+                        ? "Seguridad de cuenta"
+                        : "Account security"}
+                  </p>
+                </div>
+
+                <h3 className="mt-3 text-center text-2xl font-black tracking-[-0.035em] text-slate-950">
                   {resetSent ? t.checkEmail : t.resetPassword}
                 </h3>
 
@@ -480,14 +524,15 @@ export default function LoginForm() {
 
                       <AnimatePresence>
                         {resetError && (
-                          <motion.p
+                          <motion.div
                             initial={{ opacity: 0, y: -4 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0 }}
-                            className="mt-1 text-xs text-red-500"
+                            className="mt-1.5 flex items-start gap-2 rounded-xl border border-red-100 bg-red-50/80 px-3 py-2 text-xs font-medium leading-5 text-red-600"
                           >
-                            {resetError}
-                          </motion.p>
+                            <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" />
+                            <span>{resetError}</span>
+                          </motion.div>
                         )}
                       </AnimatePresence>
                     </div>
@@ -495,18 +540,22 @@ export default function LoginForm() {
                     <button
                       type="submit"
                       disabled={resetLoading}
-                      className="w-full cursor-pointer rounded-xl bg-linear-to-r from-blue-500 to-blue-700 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:from-blue-600 hover:to-blue-800 disabled:cursor-not-allowed disabled:opacity-70"
+                      className="group relative inline-flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-2xl border border-white/20 bg-[linear-gradient(110deg,#0d4db0_0%,#2563eb_48%,#17468f_100%)] px-4 py-3.5 text-sm font-bold text-white shadow-[0_16px_36px_rgba(13,77,176,0.24)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_48px_rgba(13,77,176,0.34)] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
                     >
-                      {resetLoading ? t.sendingReset : t.sendReset}
+                      <span className="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                      <span className="relative">
+                        {resetLoading ? t.sendingReset : t.sendReset}
+                      </span>
                     </button>
                   </form>
                 ) : (
                   <button
                     type="button"
                     onClick={closeResetModal}
-                    className="mt-6 w-full cursor-pointer rounded-xl bg-linear-to-r from-blue-500 to-blue-700 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:from-blue-600 hover:to-blue-800"
+                    className="group relative mt-6 inline-flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-2xl border border-white/20 bg-[linear-gradient(110deg,#0d4db0_0%,#2563eb_48%,#17468f_100%)] px-4 py-3.5 text-sm font-bold text-white shadow-[0_16px_36px_rgba(13,77,176,0.24)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_48px_rgba(13,77,176,0.34)]"
                   >
-                    {t.gotIt}
+                    <span className="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                    <span className="relative">{t.gotIt}</span>
                   </button>
                 )}
               </div>

@@ -20,7 +20,7 @@ export default function HeroSection() {
   muted
   loop
   playsInline
-  className="fixed md:top-0 top-28 left-0 w-full h-full my-auto md:h-full object-cover md:object-cover md:scale-105 z-0"
+  className="absolute md:top-0 top-28 left-0 w-full h-full my-auto md:h-full object-cover md:object-cover md:scale-105 z-0"
   style={{
     objectPosition: "60% 60%",
   }}

@@ -388,7 +388,8 @@ const EventSchedulerModal = ({
       imageFile,
     });
 
-    setHasUnsavedChanges(currentSnapshot !== initialFormSnapshotRef.current);
+    // Fix later
+    // setHasUnsavedChanges(currentSnapshot !== initialFormSnapshotRef.current);
   }, [schedulerForm, selectedInvitees, imageFile]);
 
   useEffect(() => {

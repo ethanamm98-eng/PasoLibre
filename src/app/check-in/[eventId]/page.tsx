@@ -415,57 +415,111 @@ if (participantsError) {
     existingEntry?.status === "attended" || !!existingEntry?.checked_in;
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-950 px-4 pb-8 pt-24 md:px-6 md:pb-10 md:pt-28">
-      {/* Main luxury gradient */}
+    <main className="relative min-h-screen overflow-hidden bg-[#fdf8fb] px-3 pb-8 pt-16 sm:px-5 sm:pb-10 sm:pt-4 lg:px-8 lg:pt-24">
       <div
         className="absolute inset-0"
         style={{
-          background: `radial-gradient(circle at 15% 10%, rgba(59,130,246,0.95) 0%, transparent 30%), radial-gradient(circle at 85% 20%, rgba(99,102,241,0.75) 0%, transparent 26%),
-          radial-gradient(circle at 50% 80%, rgba(14,165,233,0.25) 0%, transparent 35%), linear-gradient(180deg, #0d4db0 0%, #1e40af 20%, #172554 55%, #020617 100%)`,
+          background:
+            "radial-gradient(circle at 10% 8%, rgba(91,206,250,0.58), transparent 31%), radial-gradient(circle at 90% 10%, rgba(245,169,184,0.58), transparent 31%), radial-gradient(circle at 50% 38%, rgba(255,255,255,0.96), transparent 36%), radial-gradient(circle at 16% 78%, rgba(245,169,184,0.34), transparent 30%), radial-gradient(circle at 84% 82%, rgba(91,206,250,0.34), transparent 30%), linear-gradient(180deg, #dff6ff 0%, #fff9fc 31%, #ffffff 50%, #fff5f8 70%, #dff6ff 100%)",
         }}
       />
 
-      {/* Soft glass highlights */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(255,255,255,0.14),transparent_18%),radial-gradient(circle_at_80%_10%,rgba(255,255,255,0.08),transparent_14%)]" />
+      <div className="pointer-events-none absolute -left-24 top-8 h-96 w-96 rounded-full bg-[#5BCEFA]/30 blur-[135px]" />
+      <div className="pointer-events-none absolute -right-24 top-0 h-[28rem] w-[28rem] rounded-full bg-[#F5A9B8]/30 blur-[150px]" />
+      <div className="pointer-events-none absolute left-1/2 top-40 h-80 w-80 -translate-x-1/2 rounded-full bg-white/80 blur-[150px]" />
 
-      {/* Ambient color bloom */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_90%_20%,rgba(56,189,248,0.18),transparent_24%),radial-gradient(circle_at_10%_90%,rgba(168,85,247,0.18),transparent_24%)]" />
-
-      {/* Bottom fade into content */}
-      <div className="absolute inset-x-0 bottom-0 h-[55%] bg-linear-to-t from-white via-white/80 to-transparent" />
-
-      {/* Subtle noise effect */}
       <div
-        className="absolute inset-0 opacity-[0.03] mix-blend-overlay"
+        className="absolute inset-0 opacity-[0.04]"
         style={{
           backgroundImage:
-            "radial-gradient(circle, white 1px, transparent 1px)",
-          backgroundSize: "24px 24px",
+            "radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px)",
+          backgroundSize: "28px 28px",
         }}
       />
+
+      <div className="absolute inset-x-0 bottom-0 h-[46%] bg-linear-to-t from-white/95 via-white/65 to-transparent" />
+
       <div className="relative z-10 mx-auto w-full max-w-7xl">
-        <div className="relative overflow-visible rounded-[2.5rem] border border-white/40 bg-white/70 px-4 pb-5 pt-24 shadow-[0_35px_120px_rgba(15,23,42,0.28)] backdrop-blur-2xl sm:px-6 md:px-8 md:pb-8">
-          <div className="pointer-events-none absolute inset-0 rounded-[2.5rem] bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.14),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.10),transparent_24%)]" />
+        <section className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-white/55 shadow-[0_38px_130px_rgba(74,72,105,0.20)] backdrop-blur-2xl sm:rounded-[2.75rem]">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(91,206,250,0.16),transparent_34%),radial-gradient(circle_at_top_right,rgba(245,169,184,0.18),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.04))]" />
 
-          <div className="absolute left-1/2 top-0 z-20 -translate-x-1/2 -translate-y-1/2">
-            <Link
-              href="/"
-              className="group flex h-36 w-36 items-center justify-center rounded-full border border-white/80 bg-white/95 p-2 shadow-[0_24px_60px_rgba(15,23,42,0.25)] backdrop-blur-xl md:h-40 md:w-40"
-            >
-              <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-[#0d4db0] to-blue-800">
-                <Image
-                  src="/logo-title-2.png"
-                  alt="Logo"
-                  className="h-28 w-28 scale-110 cursor-pointer object-contain transition-transform duration-500 group-hover:scale-125 md:h-32 md:w-32"
-                  width={200}
-                  height={200}
-                />
+          <header className="relative isolate overflow-hidden border-b border-white/15 px-5 py-10 sm:px-8 sm:py-12 lg:px-12 lg:py-14">
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "radial-gradient(circle at 50% -12%, rgba(255,255,255,0.34), transparent 36%), radial-gradient(circle at 18% 18%, rgba(91,206,250,0.32), transparent 31%), radial-gradient(circle at 84% 15%, rgba(245,169,184,0.18), transparent 30%), radial-gradient(circle at 50% 112%, rgba(13,77,176,0.5), transparent 48%), linear-gradient(135deg, #061f52 0%, #0a357f 18%, #0d4db0 42%, #1f68cf 64%, #4aa8e8 82%, #aee8ff 100%)",
+              }}
+            />
+
+            <div className="pointer-events-none absolute left-1/2 top-[-5.5rem] h-72 w-[42rem] -translate-x-1/2 rotate-[-7deg] rounded-full bg-white/10 blur-[95px]" />
+            <div className="pointer-events-none absolute -left-14 top-0 h-60 w-60 rounded-full bg-[#0d4db0]/40 blur-[105px]" />
+            <div className="pointer-events-none absolute -right-12 -top-12 h-64 w-64 rounded-full bg-[#F5A9B8]/16 blur-[115px]" />
+            <div className="pointer-events-none absolute left-1/2 top-16 h-64 w-64 -translate-x-1/2 rounded-full bg-[#0d4db0]/35 blur-[100px]" />
+            <div
+              className="pointer-events-none absolute inset-0 opacity-35"
+              style={{
+                backgroundImage:
+                  "linear-gradient(180deg, rgba(255,255,255,0.10), transparent 48%), radial-gradient(circle, rgba(255,255,255,0.34) 0.75px, transparent 0.75px)",
+                backgroundSize: "auto, 24px 24px",
+              }}
+            />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-[linear-gradient(180deg,transparent_0%,rgba(13,77,176,0.14)_42%,rgba(223,246,255,0.34)_72%,rgba(255,255,255,0.74)_100%)]" />
+
+            <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center text-center">
+              <Link
+                href="/"
+                className="group flex flex-col items-center rounded-[2rem] outline-none transition focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-4 focus-visible:ring-offset-[#0d4db0]"
+              >
+                <span className="relative">
+                  <span className="pointer-events-none absolute inset-[-18%] rounded-[2.5rem] bg-[#0d4db0]/55 blur-3xl transition duration-500 group-hover:bg-[#0d4db0]/70" />
+                  <span className="pointer-events-none absolute inset-[-8%] rounded-[2.25rem] bg-[#5BCEFA]/20 blur-2xl" />
+
+                  <span className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-[2rem] border border-white/30 bg-white/14 p-2.5 shadow-[0_24px_75px_rgba(2,20,66,0.42)] ring-1 ring-white/10 backdrop-blur-xl transition duration-500 group-hover:-translate-y-1 group-hover:scale-[1.03] sm:h-28 sm:w-28 lg:h-32 lg:w-32">
+                    <span className="absolute inset-0 bg-linear-to-br from-white/28 via-white/5 to-[#0d4db0]/18" />
+                    <span className="absolute inset-x-4 top-2 h-px bg-linear-to-r from-transparent via-white/80 to-transparent" />
+
+                    <Image
+                      src="/logo-title-2.png"
+                      alt="Paso Libre"
+                      className="relative h-full w-full scale-[1.7] bg-[#0d4db0]/90 object-contain transition-transform duration-700 group-hover:scale-[1.82]"
+                      width={220}
+                      height={220}
+                      priority
+                    />
+                  </span>
+                </span>
+
+                <span className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/22 bg-[#0d4db0]/24 px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.28em] text-white shadow-[0_10px_30px_rgba(3,28,82,0.18)] backdrop-blur-xl sm:text-xs">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#5BCEFA] shadow-[0_0_14px_rgba(91,206,250,0.95)]" />
+                  {profileLanguage === "es"
+                    ? "Eventos queer"
+                    : "Queer events"}
+                </span>
+
+                <h1 className="mt-5 text-4xl font-black leading-[0.95] tracking-[-0.045em] text-white drop-shadow-[0_8px_28px_rgba(2,18,58,0.34)] sm:text-5xl lg:text-6xl">
+                  Paso Libre
+                </h1>
+              </Link>
+
+              <p className="mt-4 max-w-2xl text-base font-medium leading-7 text-blue-50/92 sm:text-lg lg:text-xl">
+                {profileLanguage === "es"
+                  ? "Revisa los detalles del evento y confirma tu asistencia."
+                  : "Review the event details and confirm your attendance."}
+              </p>
+
+              <div className="mt-7 flex items-center gap-3" aria-hidden="true">
+                <span className="h-px w-12 bg-linear-to-r from-transparent to-[#5BCEFA]/70 sm:w-20" />
+                <span className="h-2 w-2 rotate-45 rounded-[2px] border border-white/45 bg-white/25 shadow-[0_0_16px_rgba(91,206,250,0.55)]" />
+                <span className="h-px w-12 bg-linear-to-l from-transparent to-[#F5A9B8]/55 sm:w-20" />
               </div>
-            </Link>
-          </div>
+            </div>
+          </header>
 
-          <div className="relative grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(360px,0.85fr)] xl:gap-8">
-            <div className="min-w-0 lg:order-1">
+          <div className="relative bg-[radial-gradient(circle_at_8%_10%,rgba(91,206,250,0.13),transparent_28%),radial-gradient(circle_at_92%_12%,rgba(245,169,184,0.15),transparent_28%),linear-gradient(145deg,rgba(255,255,255,0.94)_0%,rgba(250,248,255,0.92)_42%,rgba(255,246,250,0.92)_70%,rgba(241,250,255,0.94)_100%)]">
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white to-transparent" />
+            <div className="relative grid grid-cols-1 items-start gap-8 p-4 sm:p-7 lg:grid-cols-2 lg:gap-0 lg:p-10 xl:p-12">
+            <div className="min-w-0 lg:pr-10 xl:pr-12">
               <EventDetails
                 event={eventForView}
                 attendanceSheet={attendanceSheet || null}
@@ -474,24 +528,23 @@ if (participantsError) {
               />
             </div>
 
-            <div className="min-w-0 lg:order-2">
-              <div className="lg:sticky lg:top-8">
-                <CheckInForm
-                  event={eventForView}
-                  attendanceSheetId={attendanceSheet?.id || null}
-                  attendanceSheet={attendanceSheet || null}
-                  existingEntry={existingEntry}
-                  invitedEmail={invitedEmail}
-                  invitedMemberId={invitedMemberId}
-                  invitedName={invitedName}
-                  loggedInUser={loggedInUser || null}
-                  loggedInProfile={loggedInProfile || null}
-                />
-              </div>
+            <div className="min-w-0 border-t border-slate-200/70 pt-8 lg:sticky lg:top-8 lg:border-l lg:border-t-0 lg:border-slate-200/70 lg:pl-10 lg:pt-0 xl:pl-12">
+              <CheckInForm
+                event={eventForView}
+                attendanceSheetId={attendanceSheet?.id || null}
+                attendanceSheet={attendanceSheet || null}
+                existingEntry={existingEntry}
+                invitedEmail={invitedEmail}
+                invitedMemberId={invitedMemberId}
+                invitedName={invitedName}
+                loggedInUser={loggedInUser || null}
+                loggedInProfile={loggedInProfile || null}
+              />
+            </div>
             </div>
           </div>
-        </div>
+        </section>
       </div>
-    </div>
+    </main>
   );
 }

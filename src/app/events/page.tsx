@@ -11,6 +11,7 @@ import Navbar from "../components/NavBar";
 import CalendarMain from "../components/CalendarMain";
 import EventSchedulerModal from "../components/EventSchedulerModal";
 import Footer from "../components/Footer";
+import Swal from "sweetalert2";
 
 type ProfileRecord = {
   first_name?: string | null;
@@ -421,30 +422,330 @@ const Page = () => {
     createdAt: event?.createdAt || "",
   });
 
-  const handleCalendarClick = ({
-    clickEvent,
-    event,
-  }: {
-    clickEvent?: React.MouseEvent<Element, MouseEvent>;
-    event: SchedulerForm;
-  }) => {
-    if (calendarMode === "admin") {
-      setSchedulerForm(normalizeEventToForm(event));
-      setErrors({});
-      setIsEdit(true);
-      setShowForm(true);
+  const handleMemberAttendance = async (event: SchedulerForm) => {
+  if (!event?.id) return;
+
+  const eventName = event.name_en || event.name_es || "this event";
+
+  const occurrenceDate =
+    event.occurrenceDate ||
+    event.date ||
+    (event.start ? String(event.start).split("T")[0] : "");
+
+  if (!occurrenceDate) {
+    await Swal.fire({
+      icon: "warning",
+      title: "Missing occurrence date",
+      text: "A valid occurrence date is required to confirm attendance.",
+      confirmButtonColor: "#0d4db0",
+    });
+
+    return;
+  }
+
+  try {
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError) throw authError;
+
+    if (!user) {
+      await Swal.fire({
+        icon: "warning",
+        title: "Sign in required",
+        text: "Please sign in before confirming your attendance.",
+        confirmButtonColor: "#0d4db0",
+      });
+
       return;
     }
 
-    if (calendarMode === "member" && clickEvent) {
-      const rect = (
-        clickEvent.currentTarget as HTMLElement
-      ).getBoundingClientRect();
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("first_name, last_name, email, phone")
+      .eq("id", user.id)
+      .maybeSingle();
 
-      setAttendanceAnchor(rect);
-      setAttendanceEvent(event);
+    if (profileError) throw profileError;
+
+    const participantName =
+      [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") ||
+      user.email ||
+      "Attendee";
+
+    const participantEmail = profile?.email || user.email || null;
+    const participantPhone = profile?.phone || null;
+
+    /*
+     * Check whether this user already has an attendance record
+     * for this specific event occurrence.
+     */
+    const params = new URLSearchParams({
+      eventId: event.id,
+      occurrenceDate,
+      memberId: user.id,
+    });
+
+    if (participantEmail) {
+      params.set("email", participantEmail);
     }
-  };
+
+    const attendanceResponse = await fetch(
+      `/api/event-attendance?${params.toString()}`
+    );
+
+    const attendanceResult = await attendanceResponse.json();
+
+    if (!attendanceResponse.ok || !attendanceResult?.success) {
+      throw new Error(
+        attendanceResult?.message ||
+          "Unable to load your attendance information."
+      );
+    }
+
+    const existingEntry = attendanceResult?.existingEntry || null;
+
+    const hasConfirmed =
+      existingEntry?.status === "attended" ||
+      existingEntry?.checked_in === true;
+
+    const result = await Swal.fire({
+      icon: hasConfirmed ? "success" : "question",
+
+      title: hasConfirmed
+        ? "Attendance confirmed"
+        : "Confirm attendance",
+
+      html: `
+        <div style="text-align:left">
+          <div
+            style="
+              padding:16px;
+              border:1px solid #e2e8f0;
+              border-radius:16px;
+              background:#f8fafc;
+              margin-bottom:14px;
+            "
+          >
+            <div
+              style="
+                color:#0f172a;
+                font-size:16px;
+                font-weight:700;
+                margin-bottom:5px;
+              "
+            >
+              ${eventName}
+            </div>
+
+            <div
+              style="
+                color:#64748b;
+                font-size:13px;
+                line-height:1.5;
+              "
+            >
+              ${
+                hasConfirmed
+                  ? "You have already confirmed attendance for this event."
+                  : "Would you like to confirm your attendance for this event?"
+              }
+            </div>
+
+            <div
+              style="
+                margin-top:10px;
+                color:#94a3b8;
+                font-size:12px;
+                font-weight:600;
+              "
+            >
+              Occurrence: ${occurrenceDate}
+            </div>
+          </div>
+
+          <div
+            style="
+              padding:13px;
+              border:1px solid #e2e8f0;
+              border-radius:16px;
+            "
+          >
+            <div
+              style="
+                color:#94a3b8;
+                font-size:10px;
+                font-weight:700;
+                letter-spacing:.08em;
+                text-transform:uppercase;
+              "
+            >
+              Signed in as
+            </div>
+
+            <div
+              style="
+                color:#1e293b;
+                font-size:14px;
+                font-weight:600;
+                margin-top:2px;
+              "
+            >
+              ${participantName}
+            </div>
+
+            ${
+              participantEmail
+                ? `
+                  <div
+                    style="
+                      color:#64748b;
+                      font-size:12px;
+                      margin-top:2px;
+                    "
+                  >
+                    ${participantEmail}
+                  </div>
+                `
+                : ""
+            }
+          </div>
+        </div>
+      `,
+
+      showCancelButton: true,
+
+      confirmButtonText: hasConfirmed
+        ? "Cancel attendance"
+        : "Yes, I’ll attend",
+
+      cancelButtonText: "Close",
+
+      confirmButtonColor: hasConfirmed ? "#e11d48" : "#059669",
+      cancelButtonColor: "#64748b",
+
+      reverseButtons: true,
+      focusCancel: false,
+      showLoaderOnConfirm: true,
+
+      allowOutsideClick: () => !Swal.isLoading(),
+      allowEscapeKey: () => !Swal.isLoading(),
+
+      customClass: {
+        popup: "rounded-3xl",
+        confirmButton: "rounded-xl px-5 py-2.5",
+        cancelButton: "rounded-xl px-5 py-2.5",
+      },
+
+      preConfirm: async () => {
+        try {
+          const response = await fetch("/api/event-attendance", {
+            method: hasConfirmed ? "DELETE" : "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(
+              hasConfirmed
+                ? {
+                    eventId: event.id,
+                    occurrenceDate,
+                    memberId: user.id,
+                    participantEmail,
+                  }
+                : {
+                    eventId: event.id,
+                    occurrenceDate,
+                    participantName,
+                    participantEmail,
+                    participantPhone,
+                    memberId: user.id,
+                    status: "attended",
+                  }
+            ),
+          });
+
+          const responseResult = await response.json();
+
+          if (!response.ok || !responseResult?.success) {
+            throw new Error(
+              responseResult?.message ||
+                (hasConfirmed
+                  ? "Unable to cancel attendance."
+                  : "Unable to confirm attendance.")
+            );
+          }
+
+          return responseResult;
+        } catch (error) {
+          Swal.showValidationMessage(
+            error instanceof Error
+              ? error.message
+              : "Unable to update attendance."
+          );
+
+          return false;
+        }
+      },
+    });
+
+    if (!result.isConfirmed) return;
+
+    await loadEvents();
+
+    await Swal.fire({
+      icon: "success",
+
+      title: hasConfirmed
+        ? "Attendance cancelled"
+        : "Attendance confirmed",
+
+      text: hasConfirmed
+        ? `Your attendance for ${eventName} was cancelled.`
+        : `You are now attending ${eventName}.`,
+
+      confirmButtonText: "Close",
+      confirmButtonColor: "#0d4db0",
+
+      customClass: {
+        popup: "rounded-3xl",
+        confirmButton: "rounded-xl px-5 py-2.5",
+      },
+    });
+  } catch (error) {
+    console.error("Attendance error:", error);
+
+    await Swal.fire({
+      icon: "error",
+      title: "Unable to update attendance",
+      text:
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while updating attendance.",
+      confirmButtonColor: "#dc2626",
+    });
+  }
+};
+
+ const handleCalendarClick = async ({
+  event,
+}: {
+  clickEvent?: React.MouseEvent<Element, MouseEvent>;
+  event: SchedulerForm;
+}) => {
+  if (calendarMode === "admin") {
+    setSchedulerForm(normalizeEventToForm(event));
+    setErrors({});
+    setIsEdit(true);
+    setShowForm(true);
+    return;
+  }
+
+  if (calendarMode === "member") {
+    await handleMemberAttendance(event);
+  }
+};
 
   const resetComposeForm = () => {
     setSchedulerForm(buildEmptySchedulerForm());
