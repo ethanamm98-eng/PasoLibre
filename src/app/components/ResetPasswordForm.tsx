@@ -342,7 +342,7 @@ export default function ResetPasswordForm() {
           )}
         </div>
 
-        <h1 className="mt-4 text-center text-3xl font-black tracking-[-0.045em] text-slate-950 sm:text-4xl">
+        <h1 className="mt-4 mb-4 text-center text-3xl font-black tracking-wide text-slate-950 sm:text-4xl">
           {step === "request"
             ? emailSent
               ? copy.linkSentTitle
@@ -350,7 +350,7 @@ export default function ResetPasswordForm() {
             : copy.updateTitle}
         </h1>
 
-        <p className="mx-auto mt-2 max-w-sm text-center text-sm leading-6 text-slate-500">
+        <p className="mx-auto mt-2 max-w-sm text-center text-sm leading-5 text-slate-500 px-3 sm:px-0">
           {step === "request"
             ? emailSent
               ? copy.linkSentText

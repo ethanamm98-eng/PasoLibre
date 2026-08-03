@@ -93,7 +93,7 @@ function getColorTheme(color?: string) {
 
 function getVariantIcon(
   variant?: string,
-  size: "mobile" | "desktop" = "desktop"
+  size: "mobile" | "desktop" = "desktop",
 ) {
   const iconClass = size === "mobile" ? "h-2.5 w-2.5" : "h-4 w-4";
 
@@ -144,7 +144,7 @@ function getVariantLabel(variant?: string, isSpanish?: boolean) {
 function getLocalizedValue(
   announcement: AnnouncementItem,
   field: "title" | "message" | "cta_label",
-  language: string
+  language: string,
 ) {
   const preferredLanguage = language === "es" ? "es" : "en";
 
@@ -187,7 +187,7 @@ export default function AnnouncementHeroOverlay({
           <button
             type="button"
             onClick={() => setShowAnnouncements(true)}
-            className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-white/30 bg-slate-950/45 px-3 py-2 text-xs font-semibold text-white shadow-[0_12px_35px_rgba(0,0,0,0.22)] backdrop-blur-xl transition hover:bg-slate-950/60"
+            className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-white/25 bg-slate-950/50 px-3.5 py-2 text-xs font-semibold text-white shadow-[0_14px_38px_rgba(2,6,23,0.28)] ring-1 ring-white/5 backdrop-blur-2xl transition-all duration-300 hover:-translate-y-0.5 hover:border-white/35 hover:bg-slate-950/65 hover:shadow-[0_18px_44px_rgba(2,6,23,0.34)]"
           >
             <Eye className="h-3.5 w-3.5" />
             {t.show}
@@ -204,7 +204,7 @@ export default function AnnouncementHeroOverlay({
           <button
             type="button"
             onClick={() => setShowAnnouncements(false)}
-            className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-white/25 bg-slate-950/35 px-3 py-2 text-xs font-semibold text-white shadow-lg backdrop-blur-xl transition hover:bg-slate-950/50"
+            className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-white/20 bg-slate-950/40 px-3.5 py-2 text-xs font-semibold text-white shadow-[0_12px_34px_rgba(2,6,23,0.24)] ring-1 ring-white/5 backdrop-blur-2xl transition-all duration-300 hover:-translate-y-0.5 hover:border-white/30 hover:bg-slate-950/55"
           >
             <EyeOff className="h-3.5 w-3.5" />
             {t.hide}
@@ -218,21 +218,25 @@ export default function AnnouncementHeroOverlay({
           const ctaLabel = getLocalizedValue(
             announcement,
             "cta_label",
-            language
+            language,
           );
 
           return (
             <div
               key={announcement.id}
-              className={`pointer-events-auto relative overflow-hidden rounded-3xl border border-white/20 ${styles.bg}
-              bg-linear-to-r from-white/10 to-slate-700/60 shadow-[0_18px_50px_rgba(0,0,0,0.22)] backdrop-blur-xl md:rounded-[1.75rem] md:shadow-[0_20px_60px_rgba(0,0,0,0.25)]`}
+              className={`pointer-events-auto relative overflow-hidden rounded-[1.65rem] border border-white/20 ${styles.bg}
+              bg-linear-to-r from-white/12 via-white/6 to-slate-950/18 shadow-[0_22px_60px_rgba(2,6,23,0.26)] ring-1 ring-white/5 backdrop-blur-2xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_28px_72px_rgba(2,6,23,0.32)] md:rounded-[1.9rem]`}
             >
               <div
                 className={`absolute inset-0 bg-linear-to-r ${styles.glow}`}
               />
 
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/65 to-transparent" />
+              <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
+              <div className="pointer-events-none absolute -bottom-16 -left-16 h-36 w-36 rounded-full bg-black/10 blur-3xl" />
+
               {/* Mobile Version */}
-              <div className="relative block px-4 py-4 md:hidden">
+              <div className="relative block px-[1.125rem] py-[1.125rem] md:hidden">
                 <div className="mb-3 flex items-start justify-between gap-2">
                   <div className="flex min-w-0 flex-wrap gap-1.5">
                     <div
@@ -255,16 +259,17 @@ export default function AnnouncementHeroOverlay({
                     )}
                   </div>
 
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl border border-white/15 bg-white/10 text-white shadow-sm">
-                    <Megaphone className="h-4 w-4" />
+                  <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-white/12 text-white shadow-[0_10px_26px_rgba(2,6,23,0.18)] backdrop-blur-xl">
+                    <span className="pointer-events-none absolute inset-0 rounded-[inherit] bg-linear-to-br from-white/20 via-transparent to-black/10" />
+                    <Megaphone className="relative h-4 w-4" />
                   </div>
                 </div>
 
-                <h3 className="text-base font-semibold leading-snug text-white">
+                <h3 className="text-[17px] font-semibold leading-snug tracking-[-0.015em] text-white">
                   {title}
                 </h3>
 
-                <p className="mt-2 line-clamp-4 text-sm leading-6 text-white/82">
+                <p className="mt-2.5 line-clamp-4 text-sm leading-6 text-white/82">
                   {message}
                 </p>
 
@@ -272,7 +277,7 @@ export default function AnnouncementHeroOverlay({
                   <div className="mt-4">
                     <Link
                       href={announcement.cta_url}
-                      className={`inline-flex w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold shadow-lg transition active:scale-[0.98] ${styles.button}`}
+                      className={`inline-flex w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold shadow-[0_12px_28px_rgba(2,6,23,0.18)] transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98] ${styles.button}`}
                     >
                       {ctaLabel}
                     </Link>
@@ -284,8 +289,9 @@ export default function AnnouncementHeroOverlay({
               <div className="relative hidden px-5 py-4 md:block md:px-6 md:py-5">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div className="flex items-start gap-4">
-                    <div className="mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/15 bg-white/10 text-white">
-                      <Megaphone className="h-5 w-5" />
+                    <div className="relative mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/20 bg-white/12 text-white shadow-[0_14px_34px_rgba(2,6,23,0.18)] backdrop-blur-xl">
+                      <span className="pointer-events-none absolute inset-0 rounded-[inherit] bg-linear-to-br from-white/22 via-transparent to-black/10" />
+                      <Megaphone className="relative h-5 w-5" />
                     </div>
 
                     <div>
@@ -303,19 +309,16 @@ export default function AnnouncementHeroOverlay({
                             className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${styles.softPill}`}
                           >
                             <BellRing className="h-3.5 w-3.5" />
-                            {getVariantLabel(
-                              announcement.variant,
-                              isSpanish
-                            )}
+                            {getVariantLabel(announcement.variant, isSpanish)}
                           </div>
                         )}
                       </div>
 
-                      <h3 className="mt-3 text-lg font-semibold text-white md:text-xl">
+                      <h3 className="mt-3 text-lg font-semibold tracking-[-0.02em] text-white md:text-xl">
                         {title}
                       </h3>
 
-                      <p className="mt-1 text-sm leading-6 text-white/80 md:text-[15px]">
+                      <p className="mt-1.5 max-w-3xl text-sm leading-6 text-white/82 md:text-[15px]">
                         {message}
                       </p>
                     </div>
@@ -325,7 +328,7 @@ export default function AnnouncementHeroOverlay({
                     <div className="shrink-0">
                       <Link
                         href={announcement.cta_url}
-                        className={`inline-flex items-center justify-center rounded-2xl px-4 py-3 text-sm font-semibold shadow-lg transition ${styles.button}`}
+                        className={`inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-semibold shadow-[0_14px_30px_rgba(2,6,23,0.18)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(2,6,23,0.24)] ${styles.button}`}
                       >
                         {ctaLabel}
                       </Link>

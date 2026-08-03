@@ -261,10 +261,7 @@ export default function CheckInForm({
     trackViewUrl?: string;
   } | null>(null);
 
-  const resolvedOccurrenceDate =
-    event?.occurrenceDate ||
-    event?.date ||
-    "";
+  const resolvedOccurrenceDate = event?.occurrenceDate || event?.date || "";
 
   const [checkInUrl, setCheckInUrl] = useState(
     `/check-in/${event.id}?occurrenceDate=${resolvedOccurrenceDate}`,
@@ -297,10 +294,7 @@ export default function CheckInForm({
   }, [qrOpen]);
 
   useEffect(() => {
-    const occurrenceDate =
-      event?.occurrenceDate ||
-      event?.date ||
-      "";
+    const occurrenceDate = event?.occurrenceDate || event?.date || "";
 
     setCheckInUrl(
       `${window.location.origin}/check-in/${event.id}?occurrenceDate=${encodeURIComponent(
@@ -651,7 +645,9 @@ export default function CheckInForm({
     if (!occurrenceDate) {
       Swal.fire({
         icon: "warning",
-        title: isSpanish ? "Fecha no disponible" : "Occurrence date unavailable",
+        title: isSpanish
+          ? "Fecha no disponible"
+          : "Occurrence date unavailable",
         text: isSpanish
           ? "No se pudo determinar la fecha de esta ocurrencia."
           : "The occurrence date could not be determined.",
@@ -934,52 +930,56 @@ export default function CheckInForm({
         <div className="pointer-events-none absolute -right-10 top-14 h-48 w-48 rounded-full bg-[#F5A9B8]/10 blur-3xl" />
         <div className="pointer-events-none absolute -left-12 bottom-24 h-44 w-44 rounded-full bg-[#5BCEFA]/10 blur-3xl" />
 
-        <div className="relative isolate overflow-hidden rounded-[1.75rem] border border-white/20 px-5 py-6 text-white shadow-[0_28px_75px_rgba(13,77,176,0.28),0_10px_28px_rgba(2,6,23,0.16)] sm:rounded-[2rem] sm:px-7 sm:py-7">
-          {/* Paso Libre brand gradient */}
+        <div className="relative isolate overflow-hidden rounded-[1.75rem] border border-white/25 px-5 py-6 text-white shadow-[0_30px_85px_rgba(13,77,176,0.30),0_12px_32px_rgba(2,18,58,0.18)] sm:rounded-[2rem] sm:px-7 sm:py-7">
+          {/* Match the main page header */}
           <div
             className="pointer-events-none absolute inset-0"
             style={{
               background:
-                "radial-gradient(circle at 50% -28%, rgba(255,255,255,0.34), transparent 44%), radial-gradient(circle at 8% 18%, rgba(91,206,250,0.34), transparent 34%), radial-gradient(circle at 92% 15%, rgba(245,169,184,0.18), transparent 31%), radial-gradient(circle at 52% 112%, rgba(13,77,176,0.56), transparent 48%), linear-gradient(135deg, #06285f 0%, #0a3f91 24%, #0d4db0 48%, #2369ce 72%, #4b9ee8 100%)",
+                "radial-gradient(circle at 50% -12%, rgba(255,255,255,0.34), transparent 36%), radial-gradient(circle at 18% 18%, rgba(91,206,250,0.32), transparent 31%), radial-gradient(circle at 84% 15%, rgba(245,169,184,0.18), transparent 30%), radial-gradient(circle at 50% 112%, rgba(13,77,176,0.50), transparent 48%), linear-gradient(135deg, #061f52 0%, #0a357f 18%, #0d4db0 42%, #1f68cf 64%, #4aa8e8 82%, #aee8ff 100%)",
             }}
           />
 
-          {/* Central brand illumination */}
-          <div className="pointer-events-none absolute left-1/2 top-0 h-44 w-[78%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0d4db0]/55 blur-[70px]" />
+          {/* Header-style upper light beam */}
+          <div className="pointer-events-none absolute left-1/2 top-[-5.5rem] h-72 w-[42rem] -translate-x-1/2 rotate-[-7deg] rounded-full bg-white/10 blur-[95px]" />
 
-          {/* Restrained pride lighting */}
-          <div className="pointer-events-none absolute -left-16 -top-14 h-44 w-44 rounded-full bg-[#5BCEFA]/22 blur-3xl" />
-          <div className="pointer-events-none absolute -right-16 -top-14 h-40 w-40 rounded-full bg-[#F5A9B8]/12 blur-3xl" />
+          {/* Deeper blue left glow */}
+          <div className="pointer-events-none absolute -left-14 top-0 h-60 w-60 rounded-full bg-[#0d4db0]/40 blur-[105px]" />
 
-          {/* Soft stage-light beam */}
-          <div className="pointer-events-none absolute left-1/2 top-[-5rem] h-52 w-[34rem] -translate-x-1/2 rotate-[-6deg] bg-white/8 blur-[85px]" />
+          {/* Soft pink right glow */}
+          <div className="pointer-events-none absolute -right-12 -top-12 h-64 w-64 rounded-full bg-[#F5A9B8]/16 blur-[115px]" />
 
-          {/* Fine atmospheric texture */}
+          {/* Central blue illumination */}
+          <div className="pointer-events-none absolute left-1/2 top-16 h-64 w-64 -translate-x-1/2 rounded-full bg-[#0d4db0]/35 blur-[100px]" />
+
+          {/* Matching header texture */}
           <div
-            className="pointer-events-none absolute inset-0 opacity-[0.08]"
+            className="pointer-events-none absolute inset-0 opacity-35"
             style={{
               backgroundImage:
-                "radial-gradient(circle, rgba(255,255,255,0.9) 0.75px, transparent 0.75px)",
-              backgroundSize: "24px 24px",
+                "linear-gradient(180deg, rgba(255,255,255,0.10), transparent 48%), radial-gradient(circle, rgba(255,255,255,0.34) 0.75px, transparent 0.75px)",
+              backgroundSize: "auto, 24px 24px",
             }}
           />
 
-          {/* Gloss and lower depth */}
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/65 to-transparent" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-linear-to-t from-[#041b43]/55 via-[#082f70]/18 to-transparent" />
+          {/* Softer transition into the card body */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-[linear-gradient(180deg,transparent_0%,rgba(13,77,176,0.14)_42%,rgba(174,232,255,0.18)_72%,rgba(255,255,255,0.18)_100%)]" />
 
-          <div className="relative flex items-start gap-4">
+          {/* Top gloss */}
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-white/70 to-transparent" />
+
+          <div className="relative z-10 flex items-start gap-4">
             <div className="relative shrink-0">
-              <div className="pointer-events-none absolute inset-0 rounded-[1.15rem] bg-blue-300/30 blur-xl" />
+              <div className="pointer-events-none absolute inset-0 rounded-[1.15rem] bg-sky-300/30 blur-xl" />
 
               <div
                 className={`relative flex h-10 w-10 items-center justify-center rounded-[1.15rem] border shadow-[0_16px_36px_rgba(2,6,23,0.28),inset_0_1px_0_rgba(255,255,255,0.22)] backdrop-blur-xl transition ${
                   confirmed
                     ? "border-emerald-200/30 bg-emerald-400/18 text-emerald-100"
-                    : "border-white/25 bg-white/12 text-white"
+                    : "border-white/30 bg-white/14 text-white"
                 }`}
               >
-                <span className="pointer-events-none absolute inset-0 rounded-[inherit] bg-linear-to-br from-white/18 via-transparent to-blue-950/12" />
+                <span className="pointer-events-none absolute inset-0 rounded-[inherit] bg-linear-to-br from-white/22 via-transparent to-blue-950/12" />
 
                 <span className="relative">
                   {confirmed ? (
@@ -993,26 +993,28 @@ export default function CheckInForm({
 
             <div className="min-w-0">
               <div className="mb-2 flex flex-wrap items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-sky-300 shadow-[0_0_14px_rgba(125,211,252,0.95)]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-[#5BCEFA] shadow-[0_0_14px_rgba(91,206,250,0.95)]" />
 
-                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-blue-100/95">
+                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-blue-50/95">
                   {language === "en"
                     ? "Event invitation"
                     : "Invitación al evento"}
                 </p>
               </div>
 
-              <h2 className="text-2xl font-black tracking-[-0.04em] text-white drop-shadow-[0_8px_24px_rgba(2,6,23,0.24)] sm:text-3xl">
+              <h2 className="text-2xl font-black tracking-[-0.04em] text-white drop-shadow-[0_8px_28px_rgba(2,18,58,0.30)] sm:text-3xl">
                 {confirmed ? t.cardTitleConfirmed : t.cardTitleDefault}
               </h2>
 
-              {!confirmed && <p className="mt-2 max-w-xl text-sm font-medium leading-6 text-blue-100/90">
-                {confirmed ? t.cardTextConfirmed : t.cardTextDefault}
-              </p>}
+              {!confirmed && (
+                <p className="mt-2 max-w-xl text-sm font-medium leading-6 text-blue-50/90">
+                  {t.cardTextDefault}
+                </p>
+              )}
 
               <div className="mt-4 flex items-center gap-2" aria-hidden="true">
-                <span className="h-px w-12 bg-linear-to-r from-white/45 to-transparent" />
-                <span className="h-1.5 w-1.5 rotate-45 rounded-[1px] border border-white/35 bg-white/15" />
+                <span className="h-px w-12 bg-linear-to-r from-white/50 to-transparent" />
+                <span className="h-1.5 w-1.5 rotate-45 rounded-[1px] border border-white/40 bg-white/20 shadow-[0_0_12px_rgba(91,206,250,0.35)]" />
               </div>
             </div>
           </div>

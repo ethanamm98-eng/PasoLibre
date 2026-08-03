@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Footer from "@/src/app/components/Footer";
-import "../globals.css";
 
 export const metadata: Metadata = {
   title: "Announcement Manager - Paso Libre",

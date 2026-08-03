@@ -54,9 +54,7 @@ export default function SignUpForm() {
     email: isSpanish ? "Correo electrónico" : "Email",
     phone: isSpanish ? "Teléfono" : "Phone",
     password: isSpanish ? "Contraseña" : "Password",
-    confirmPassword: isSpanish
-      ? "Confirmar contraseña"
-      : "Confirm password",
+    confirmPassword: isSpanish ? "Confirmar contraseña" : "Confirm password",
     languagePreference: isSpanish
       ? "Preferencia de idioma"
       : "Language preference",
@@ -83,16 +81,12 @@ export default function SignUpForm() {
     usernameInvalid: isSpanish
       ? "El usuario solo puede contener letras, números, puntos, guiones bajos y guiones"
       : "Username can only contain letters, numbers, dots, underscores, and hyphens",
-    emailRequired: isSpanish
-      ? "El correo es requerido"
-      : "Email is required",
+    emailRequired: isSpanish ? "El correo es requerido" : "Email is required",
     invalidEmail: isSpanish ? "Correo inválido" : "Invalid email",
     passwordRequired: isSpanish
       ? "La contraseña es requerida"
       : "Password is required",
-    passwordMin: isSpanish
-      ? "Mínimo 6 caracteres"
-      : "Minimum 6 characters",
+    passwordMin: isSpanish ? "Mínimo 6 caracteres" : "Minimum 6 characters",
     confirmRequired: isSpanish
       ? "Confirma tu contraseña"
       : "Confirm your password",
@@ -175,10 +169,7 @@ export default function SignUpForm() {
 
   const strengthLabels = [t.weak, t.fair, t.good, t.strong];
 
-  const handleChange = (
-    field: keyof FormState,
-    value: string | boolean,
-  ) => {
+  const handleChange = (field: keyof FormState, value: string | boolean) => {
     let nextValue = value;
 
     if (field === "phone" && typeof value === "string") {
@@ -259,9 +250,7 @@ export default function SignUpForm() {
     }
   };
 
-  const handleSubmit = async (
-    event: React.FormEvent<HTMLFormElement>,
-  ) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!validate()) return;
@@ -331,15 +320,12 @@ export default function SignUpForm() {
         body: JSON.stringify({
           pendingSignupId: pendingSignup.id,
           email: pendingSignup.email || cleanEmail,
-          firstName:
-            pendingSignup.first_name || form.firstName.trim(),
-          lastName:
-            pendingSignup.last_name || form.lastName.trim(),
+          firstName: pendingSignup.first_name || form.firstName.trim(),
+          lastName: pendingSignup.last_name || form.lastName.trim(),
           username: pendingSignup.username || cleanUsername,
           phone: pendingSignup.phone || form.phone.trim() || null,
           languagePreference:
-            pendingSignup.language_preference ||
-            form.languagePreference,
+            pendingSignup.language_preference || form.languagePreference,
         }),
       });
 
@@ -361,9 +347,7 @@ export default function SignUpForm() {
       console.error("Signup error:", error);
 
       setGlobalError(
-        error instanceof Error
-          ? error.message
-          : t.genericSubmitError,
+        error instanceof Error ? error.message : t.genericSubmitError,
       );
     } finally {
       setButtonLoading(false);
@@ -413,29 +397,30 @@ export default function SignUpForm() {
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-center gap-2">
+      {/* <div className="flex items-center justify-center gap-2">
         <span className="h-1.5 w-1.5 rounded-full bg-sky-400 shadow-[0_0_14px_rgba(56,189,248,0.9)]" />
         <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#0d4db0]">
           {t.eyebrow}
         </p>
+      </div> */}
+
+      <div className="mb-6">
+        <h1 className="mt-3 text-center text-3xl font-black tracking-wide text-slate-950 sm:text-4xl">
+          {t.join}
+        </h1>
+        <p className="mx-auto mt-2 max-w-md text-center text-sm leading-5 text-slate-500 px-2 sm:px-0">
+          {t.description}
+        </p>
       </div>
 
-      <h1 className="mt-3 text-center text-3xl font-black tracking-[-0.045em] text-slate-950 sm:text-4xl">
-        {t.join}
-      </h1>
-
-      <p className="mx-auto mt-2 max-w-md text-center text-sm leading-6 text-slate-500">
-        {t.description}
-      </p>
-
-      <div
+      {/* <div
         className="my-6 flex items-center justify-center gap-3"
         aria-hidden="true"
       >
         <span className="h-px w-16 bg-linear-to-r from-transparent via-blue-200 to-blue-200" />
         <span className="h-2 w-2 rotate-45 rounded-[2px] border border-blue-200 bg-blue-50" />
         <span className="h-px w-16 bg-linear-to-l from-transparent via-blue-200 to-blue-200" />
-      </div>
+      </div> */}
 
       <AnimatePresence initial={false}>
         {globalError && (
@@ -564,9 +549,7 @@ export default function SignUpForm() {
           label={t.confirmPassword}
           type="password"
           value={form.confirmPassword}
-          onChange={(value) =>
-            handleChange("confirmPassword", value)
-          }
+          onChange={(value) => handleChange("confirmPassword", value)}
           error={errors.confirmPassword}
           autoComplete="new-password"
           disabled={buttonLoading}
@@ -641,9 +624,7 @@ export default function SignUpForm() {
         </button>
 
         <div className="rounded-[1.4rem] border border-slate-200/80 bg-linear-to-br from-slate-50 via-white to-blue-50/50 p-4 text-center shadow-[0_8px_22px_rgba(15,23,42,0.04)]">
-          <p className="text-sm text-slate-500">
-            {t.alreadyHaveAccount}
-          </p>
+          <p className="text-sm text-slate-500">{t.alreadyHaveAccount}</p>
 
           <button
             type="button"

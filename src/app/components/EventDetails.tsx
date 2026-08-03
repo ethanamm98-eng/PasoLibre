@@ -545,7 +545,7 @@ export default function EventDetails({
         )}
       </div>
 
-      <div className="flex flex-1 flex-col p-5 sm:p-7 lg:p-5">
+      <div className="flex flex-1 flex-col p-5 sm:p-7 lg:p-4">
         <section className="relative overflow-hidden rounded-[1.75rem] px-1 py-6 sm:px-2 sm:py-7">
           <div className="pointer-events-none absolute inset-0 " />
           <div className="pointer-events-none absolute -left-12 -top-14 h-36 w-36 rounded-full" />
@@ -557,7 +557,7 @@ export default function EventDetails({
                 <BookOpenText className="h-4 w-4" />
               </div>
 
-              <div className="min-w-0">
+              <div className="">
                 <div className="flex justify-center items-center gap-2">
                   <p className="text-[12px] font-black uppercase tracking-[0.24em] text-sky-700 my-auto">
                     {t.aboutEvent}
@@ -936,7 +936,7 @@ function InfoTile({
 
       <div className="flex items-start gap-3.5">
         <span
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ring-1 transition-transform duration-300 group-hover:scale-105 ${toneClasses.icon}`}
+          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-2xl ring-1 transition-transform duration-300 group-hover:scale-105 ${toneClasses.icon}`}
         >
           {icon}
         </span>

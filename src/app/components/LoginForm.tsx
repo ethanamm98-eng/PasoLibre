@@ -108,7 +108,7 @@ export default function LoginForm() {
   const [resetError, setResetError] = useState("");
 
   const [errors, setErrors] = useState<{ email?: string; password?: string }>(
-    {}
+    {},
   );
 
   const isEmailAddress = (value: string) =>
@@ -202,7 +202,7 @@ export default function LoginForm() {
         cleanResetEmail,
         {
           redirectTo: `${siteUrl}/reset-password`,
-        }
+        },
       );
 
       if (error) throw error;
@@ -211,7 +211,7 @@ export default function LoginForm() {
     } catch (error: unknown) {
       console.error("Reset password error:", error);
       setResetError(
-        (error as { message?: string })?.message || t.resetEmailFailed
+        (error as { message?: string })?.message || t.resetEmailFailed,
       );
     } finally {
       setResetLoading(false);
@@ -246,11 +246,13 @@ export default function LoginForm() {
 
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("id, email, username, is_approved, account_status, role, language_preference")
+        .select(
+          "id, email, username, is_approved, account_status, role, language_preference",
+        )
         .eq("id", data.user.id)
         .maybeSingle();
 
-        setLanguage(profile?.language_preference || "en");
+      setLanguage(profile?.language_preference || "en");
 
       if (profileError) {
         await supabase.auth.signOut();
@@ -320,26 +322,28 @@ export default function LoginForm() {
         <div className="pointer-events-none absolute inset-x-12 top-0 h-px" />
 
         <div className="relative">
-          <div className="flex items-center justify-center gap-2">
+          {/* <div className="flex items-center justify-center gap-2">
             <span className="h-1.5 w-1.5 rounded-full bg-sky-400 shadow-[0_0_14px_rgba(56,189,248,0.9)]" />
             <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#0d4db0]">
               {isSpanish ? "Bienvenido de nuevo" : "Welcome back"}
             </p>
+          </div> */}
+
+          <div className="mb-6">
+            <h2 className="mt-3 text-center text-3xl font-black tracking-wide text-slate-950 sm:text-4xl">
+              {t.signIn}
+            </h2>
+
+            <p className="mx-auto mt-2 max-w-sm text-center text-sm leading-5 text-slate-500">
+              {t.credentials}
+            </p>
           </div>
 
-          <h2 className="mt-3 text-center text-3xl font-black tracking-[-0.045em] text-slate-950 sm:text-4xl">
-            {t.signIn}
-          </h2>
-
-          <p className="mx-auto mt-2 max-w-sm text-center text-sm leading-6 text-slate-500">
-            {t.credentials}
-          </p>
-
-          <div className="my-6 flex items-center justify-center gap-3" aria-hidden="true">
+          {/* <div className="my-6 flex items-center justify-center gap-3" aria-hidden="true">
             <span className="h-px w-16 bg-linear-to-r from-transparent via-blue-200 to-blue-200" />
             <span className="h-2 w-2 rotate-45 rounded-[2px] border border-blue-200 bg-blue-50" />
             <span className="h-px w-16 bg-linear-to-l from-transparent via-blue-200 to-blue-200" />
-          </div>
+          </div> */}
 
           <form onSubmit={handleLogin} className="space-y-5">
             <div>

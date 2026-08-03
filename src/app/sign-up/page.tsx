@@ -219,22 +219,53 @@ export default function SignUpPage() {
 
             <div className="relative mx-auto w-full max-w-xl">
               {/* Mobile logo */}
-              <div className="mb-7 flex justify-center lg:hidden">
+              <div className="mb-6 flex justify-center lg:hidden">
                 <Link
                   href="/"
                   aria-label={t.homeLabel}
-                  className="group relative flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border border-blue-100 bg-white ring-[0.8px] ring-[#0d4db0]/80 shadow-[0_18px_40px_rgba(13,77,176,0.15)]"
+                  className="group relative flex flex-col items-center"
                 >
-                  <span className="pointer-events-none absolute inset-0 bg-linear-to-br from-blue-50 via-white to-sky-50" />
+                  {/* Outer ambient glow */}
+                  <span className="pointer-events-none absolute top-1/2 h-28 w-28 -translate-y-1/2 rounded-full bg-[#0d4db0]/20 blur-3xl transition duration-500 group-hover:bg-[#0d4db0]/30" />
 
-                  <Image
-                    src="/logo-title-4.png"
-                    alt={t.logoAlt}
-                    width={160}
-                    height={160}
-                    priority
-                    className="relative h-24 w-24 scale-[1.65] object-contain transition-transform duration-500 group-hover:scale-[1.75]"
-                  />
+                  {/* Main logo card */}
+                  <span className="relative flex h-32 w-32 items-center justify-center">
+                    {/* Cyan glow */}
+                    <span className="pointer-events-none absolute inset-[-10%] rounded-[2.2rem] bg-[#5BCEFA]/28 blur-2xl transition duration-500 group-hover:bg-[#5BCEFA]/40" />
+
+                    {/* Pink accent */}
+                    <span className="pointer-events-none absolute -right-2 -top-2 h-12 w-12 rounded-full bg-[#F5A9B8]/24 blur-xl" />
+
+                    {/* Glass frame */}
+                    <span className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-[2rem] border border-blue-100/80 bg-white/90 shadow-[0_24px_65px_rgba(13,77,176,0.20),inset_0_1px_0_rgba(255,255,255,0.9)] ring-1 ring-[#0d4db0]/20 backdrop-blur-xl transition-all duration-500 group-hover:-translate-y-1 group-hover:scale-[1.03] group-hover:shadow-[0_30px_75px_rgba(13,77,176,0.28)]">
+                      {/* Soft internal gradient */}
+                      <span className="pointer-events-none absolute inset-0 bg-linear-to-br from-blue-50 via-white to-sky-50" />
+
+                      {/* Top gloss */}
+                      <span className="pointer-events-none absolute inset-x-5 top-3 h-px bg-linear-to-r from-transparent via-white to-transparent" />
+
+                      {/* Bottom depth */}
+                      <span className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-linear-to-t from-[#0d4db0]/8 to-transparent" />
+
+                      <Image
+                        src="/logo-title-4.png"
+                        alt={t.logoAlt}
+                        width={180}
+                        height={180}
+                        priority
+                        className="relative h-26 w-26 scale-[1.72] object-contain transition-transform duration-700 group-hover:scale-[1.86]"
+                      />
+                    </span>
+                  </span>
+
+                  {/* Brand text */}
+                  <span className="mt-4 text-center">
+                    <span className="flex items-center justify-center gap-2">
+                      <span className="text-[9px] relative bottom-2 font-black uppercase tracking-[0.24em] text-[#0d4db0]/70">
+                        Puerto Rico
+                      </span>
+                    </span>
+                  </span>
                 </Link>
               </div>
 
