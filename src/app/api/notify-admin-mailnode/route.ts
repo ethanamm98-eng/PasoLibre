@@ -51,11 +51,14 @@ export async function POST(req: Request) {
           success: false,
           message: "Missing required fields",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+    const siteUrl =
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      process.env.NEXT_PUBLIC_DEV_SITE_URL ||
+      "http://localhost:3000";
 
     const adminDashboardUrl = `${siteUrl}/account-manager`;
 
@@ -111,14 +114,14 @@ export async function POST(req: Request) {
                       <tr>
                         <td style="padding:6px 0;font-size:13px;color:#374151;">
                           <strong>Phone:</strong> ${escapeHtml(
-                            phone || "Not provided"
+                            phone || "Not provided",
                           )}
                         </td>
                       </tr>
                       <tr>
                         <td style="padding:6px 0;font-size:13px;color:#374151;">
                           <strong>Pending Signup ID:</strong> ${escapeHtml(
-                            pendingSignupId
+                            pendingSignupId,
                           )}
                         </td>
                       </tr>
@@ -168,7 +171,7 @@ export async function POST(req: Request) {
         success: false,
         message: error instanceof Error ? error.message : "Server error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

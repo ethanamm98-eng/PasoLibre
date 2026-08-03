@@ -60,7 +60,7 @@ const looksSpanish = (value?: string | null) => {
   return (
     /[áéíóúñü¿¡]/i.test(text) ||
     /\b(el|la|los|las|un|una|unos|unas|de|del|para|por|con|sin|que|este|esta|estos|estas|espacio|seguro|divertido|gente|comunidad|asistencia|evento|invitadx|jangueo|próximo|proximo)\b/i.test(
-      text
+      text,
     )
   );
 };
@@ -71,7 +71,7 @@ const looksEnglish = (value?: string | null) => {
   if (!text) return false;
 
   return /\b(the|a|an|and|or|for|with|without|safe|fun|space|people|folks|community|event|invited|hangout|upcoming|attendance|check)\b/i.test(
-    text
+    text,
   );
 };
 
@@ -268,7 +268,7 @@ export async function POST(req: Request) {
           error_en: getCopy("en").missingResend,
           error_es: getCopy("es").missingResend,
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -276,7 +276,7 @@ export async function POST(req: Request) {
       ? recipients.filter((recipient) =>
           typeof recipient === "string"
             ? recipient.includes("@")
-            : String(recipient?.email || "").includes("@")
+            : String(recipient?.email || "").includes("@"),
         )
       : [];
 
@@ -288,7 +288,7 @@ export async function POST(req: Request) {
           error_en: getCopy("en").noRecipients,
           error_es: getCopy("es").noRecipients,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -305,11 +305,15 @@ export async function POST(req: Request) {
           error_en: getCopy("en").eventNameRequired,
           error_es: getCopy("es").eventNameRequired,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+    const siteUrl =
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      process.env.NEXT_PUBLIC_DEV_SITE_URL ||
+      "http://localhost:3000";
+      
     const logoUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/email-assets/logo-title.png`;
 
     const eventUrl = buildEventUrl({
@@ -492,8 +496,8 @@ export async function POST(req: Request) {
 
                           <p style="margin:8px 0 0;color:#94a3b8;font-size:11px;">
                             © ${new Date().getFullYear()} Paso Libre. ${
-            copy.rights
-          }
+                              copy.rights
+                            }
                           </p>
                         </td>
                       </tr>
@@ -504,7 +508,7 @@ export async function POST(req: Request) {
             </div>
           `,
         });
-      })
+      }),
     );
 
     const sent = results.filter((result) => result.status === "fulfilled");
@@ -541,7 +545,7 @@ export async function POST(req: Request) {
         error_es:
           error instanceof Error ? error.message : getCopy("es").unableToSend,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

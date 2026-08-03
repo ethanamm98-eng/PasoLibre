@@ -21,4 +21,5 @@ Bugs found testing so far
 [X] Completely translate the profile
 [X] Fix handleCalendarClick
 [ ] Fix announcements
+[ ] Fix email links (hard-coded localhost)
 

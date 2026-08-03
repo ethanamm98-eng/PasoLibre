@@ -39,7 +39,9 @@ const escapeHtml = (value: string) =>
     .replaceAll("'", "&#039;");
 
 const getLanguage = (value?: string | null): EmailLanguage => {
-  const normalized = String(value || "").trim().toLowerCase();
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase();
 
   return ["es", "spa", "spanish", "español"].includes(normalized) ? "es" : "en";
 };
@@ -48,8 +50,12 @@ const getCopy = (language: EmailLanguage) => {
   const isSpanish = language === "es";
 
   return {
-    missingResend: isSpanish ? "Falta RESEND_API_KEY." : "Missing RESEND_API_KEY.",
-    missingPendingSignupId: isSpanish ? "Falta pendingSignupId." : "Missing pendingSignupId.",
+    missingResend: isSpanish
+      ? "Falta RESEND_API_KEY."
+      : "Missing RESEND_API_KEY.",
+    missingPendingSignupId: isSpanish
+      ? "Falta pendingSignupId."
+      : "Missing pendingSignupId.",
     pendingNotFound: isSpanish
       ? "La solicitud pendiente no fue encontrada o ya fue revisada."
       : "Pending signup not found or already reviewed.",
@@ -71,7 +77,9 @@ const getCopy = (language: EmailLanguage) => {
     approvalSubject: isSpanish
       ? "Tu Cuenta de Paso Libre Ha Sido Aprobada"
       : "Your Paso Libre Account Has Been Approved",
-    approvedHeader: isSpanish ? "Tu Cuenta Ha Sido Aprobada" : "Your Account Has Been Approved",
+    approvedHeader: isSpanish
+      ? "Tu Cuenta Ha Sido Aprobada"
+      : "Your Account Has Been Approved",
     welcome: isSpanish ? "¡Bienvenido a Paso Libre!" : "Welcome to Paso Libre!",
     greeting: isSpanish ? "Hola" : "Hi",
     approvedMessage: isSpanish
@@ -83,15 +91,22 @@ const getCopy = (language: EmailLanguage) => {
     signInInstruction: isSpanish
       ? "Haz clic en el botón de abajo para iniciar sesión y comenzar a explorar tu panel."
       : "Click the button below to sign in and start exploring your dashboard.",
-    signInButton: isSpanish ? "Iniciar Sesión en Paso Libre" : "Sign In to Paso Libre",
+    signInButton: isSpanish
+      ? "Iniciar Sesión en Paso Libre"
+      : "Sign In to Paso Libre",
     supportMessage: isSpanish
       ? "Si tienes alguna pregunta, simplemente responde a este correo — estaremos felices de ayudarte."
       : "If you have any questions, just reply to this email — we’re happy to help.",
-    rightsReserved: isSpanish ? "Todos los derechos reservados." : "All rights reserved.",
+    rightsReserved: isSpanish
+      ? "Todos los derechos reservados."
+      : "All rights reserved.",
   };
 };
 
-async function findAuthUserByEmail(supabaseAdmin: ReturnType<typeof getSupabaseAdmin>, email: string) {
+async function findAuthUserByEmail(
+  supabaseAdmin: ReturnType<typeof getSupabaseAdmin>,
+  email: string,
+) {
   const { data, error } = await supabaseAdmin.auth.admin.listUsers({
     page: 1,
     perPage: 1000,
@@ -99,7 +114,10 @@ async function findAuthUserByEmail(supabaseAdmin: ReturnType<typeof getSupabaseA
 
   if (error) throw error;
 
-  return data.users.find((u) => u.email?.toLowerCase() === email.toLowerCase()) || null;
+  return (
+    data.users.find((u) => u.email?.toLowerCase() === email.toLowerCase()) ||
+    null
+  );
 }
 
 async function sendApprovalEmail({
@@ -115,7 +133,11 @@ async function sendApprovalEmail({
   const language = getLanguage(languagePreference);
   const copy = getCopy(language);
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.NEXT_PUBLIC_DEV_SITE_URL ||
+    "http://localhost:3000";
+    
   const loginUrl = `${siteUrl}/login`;
   const logoUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/email-assets/logo-title.png`;
 
@@ -198,7 +220,7 @@ export async function POST(req: Request) {
           message_en: getCopy("en").missingPendingSignupId,
           message_es: getCopy("es").missingPendingSignupId,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -219,14 +241,16 @@ export async function POST(req: Request) {
           message_en: getCopy("en").pendingNotFound,
           message_es: getCopy("es").pendingNotFound,
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     const language = getLanguage(pendingSignup.language_preference || "en");
     const copy = getCopy(language);
 
-    const cleanEmail = String(pendingSignup.email || "").trim().toLowerCase();
+    const cleanEmail = String(pendingSignup.email || "")
+      .trim()
+      .toLowerCase();
 
     if (!cleanEmail) {
       throw new Error("Missing pending signup email.");
@@ -291,7 +315,7 @@ export async function POST(req: Request) {
         account_status: "active",
         language_preference: pendingSignup.language_preference || "en",
       },
-      { onConflict: "id" }
+      { onConflict: "id" },
     );
 
     if (profileError) throw profileError;
@@ -339,7 +363,7 @@ export async function POST(req: Request) {
         message_en: message || getCopy("en").unableApprove,
         message_es: message || getCopy("es").unableApprove,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

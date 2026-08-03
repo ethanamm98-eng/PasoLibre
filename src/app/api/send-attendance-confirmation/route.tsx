@@ -92,7 +92,6 @@ const getCopy = (language: EmailLanguage) => {
 };
 
 export async function POST(req: Request) {
-
   try {
     const resend = getResend();
     const body = await req.json();
@@ -111,7 +110,7 @@ export async function POST(req: Request) {
     const participantEmail = String(body.participantEmail || "").trim();
 
     const participantLanguagePreference = String(
-      body.participantLanguagePreference || "en"
+      body.participantLanguagePreference || "en",
     )
       .trim()
       .toLowerCase();
@@ -139,7 +138,7 @@ export async function POST(req: Request) {
           message_en: getCopy("en").missingFields,
           message_es: getCopy("es").missingFields,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -151,11 +150,14 @@ export async function POST(req: Request) {
           message_en: getCopy("en").missingResend,
           message_es: getCopy("es").missingResend,
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+    const siteUrl =
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      process.env.NEXT_PUBLIC_DEV_SITE_URL ||
+      "http://localhost:3000";
 
     const logoUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/email-assets/logo-title.png`;
 
@@ -237,8 +239,8 @@ export async function POST(req: Request) {
 
                     <p style="margin:8px 0 0;color:#94a3b8;font-size:11px;">
                       © ${new Date().getFullYear()} Paso Libre. ${
-      copy.rightsReserved
-    }
+                        copy.rightsReserved
+                      }
                     </p>
                   </td>
                 </tr>
@@ -268,7 +270,7 @@ export async function POST(req: Request) {
         message_en: "Attendance confirmation sent successfully.",
         message_es: "La confirmación de asistencia fue enviada correctamente.",
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error: unknown) {
     console.error("send-attendance-confirmation error:", error);
@@ -283,7 +285,7 @@ export async function POST(req: Request) {
         message_en: errorMessage || getCopy("en").serverError,
         message_es: errorMessage || getCopy("es").serverError,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

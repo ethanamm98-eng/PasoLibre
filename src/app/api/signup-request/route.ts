@@ -4,7 +4,7 @@ import { getSupabaseAdmin } from "../../lib/supabase/supabaseAdmin";
 
 export async function POST(req: Request) {
   const supabaseAdmin = getSupabaseAdmin();
-  
+
   try {
     const body = await req.json();
 
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
           success: false,
           message: "Please complete all required fields.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -59,7 +59,7 @@ export async function POST(req: Request) {
           success: false,
           message: "Invalid email address.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
           message:
             "Username must be at least 3 characters and only contain letters, numbers, dots, underscores, and hyphens.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -80,7 +80,7 @@ export async function POST(req: Request) {
           success: false,
           message: "Password must be at least 6 characters.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -90,7 +90,7 @@ export async function POST(req: Request) {
           success: false,
           message: "Passwords do not match.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -112,7 +112,7 @@ export async function POST(req: Request) {
             ? "An account with this email already exists."
             : "Your account is pending admin approval.",
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -132,7 +132,7 @@ export async function POST(req: Request) {
           code: "USERNAME_EXISTS",
           message: "That username is already taken.",
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -153,7 +153,7 @@ export async function POST(req: Request) {
           code: "PENDING_EXISTS",
           message: "You already have a signup request pending approval.",
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -174,7 +174,7 @@ export async function POST(req: Request) {
           code: "USERNAME_EXISTS",
           message: "That username is already taken.",
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -197,7 +197,9 @@ export async function POST(req: Request) {
     if (insertError) throw insertError;
 
     const notifyBase =
-      process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      process.env.NEXT_PUBLIC_DEV_SITE_URL ||
+      "http://localhost:3000";
 
     const notifyResponse = await fetch(`${notifyBase}/api/notify-admin`, {
       method: "POST",
@@ -229,7 +231,7 @@ export async function POST(req: Request) {
         success: true,
         message: "Signup request submitted successfully.",
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error: unknown) {
     console.error("signup-request error:", error);
@@ -240,7 +242,7 @@ export async function POST(req: Request) {
         message:
           (error as Error)?.message || "Failed to submit signup request.",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -42,11 +42,14 @@ export async function POST(req: Request) {
     if (!email || !firstName) {
       return NextResponse.json(
         { success: false, message: "Missing email or firstName." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+    const siteUrl =
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      process.env.NEXT_PUBLIC_DEV_SITE_URL ||
+      "http://localhost:3000";
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
@@ -100,7 +103,9 @@ export async function POST(req: Request) {
         ? "Si tienes alguna pregunta, simplemente responde a este correo electrónico. Estaremos encantados de ayudarte."
         : "If you have any questions, just reply to this email — we’re happy to help.",
 
-      rights: isSpanish ? "Todos los derechos reservados." : "All rights reserved.",
+      rights: isSpanish
+        ? "Todos los derechos reservados."
+        : "All rights reserved.",
 
       failedSend: isSpanish
         ? "No se pudo enviar el correo de aprobación."
@@ -195,13 +200,13 @@ export async function POST(req: Request) {
 
       return NextResponse.json(
         { success: false, message: copy.failedSend },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     return NextResponse.json(
       { success: true, message: "Approval email sent successfully." },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("notify-user error:", error);
@@ -213,7 +218,7 @@ export async function POST(req: Request) {
           (error instanceof Error && error.message) ||
           "Unable to send approval email.",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

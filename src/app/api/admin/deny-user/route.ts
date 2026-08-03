@@ -47,7 +47,11 @@ async function sendDeniedEmail({
 }) {
   const resend = getResend();
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.NEXT_PUBLIC_DEV_SITE_URL ||
+    "http://localhost:3000";
+    
   const contactUrl = `${siteUrl}/contact`;
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -147,7 +151,7 @@ export async function POST(req: Request) {
     if (!pendingSignupId) {
       return NextResponse.json(
         { success: false, message: "Missing pendingSignupId." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -166,7 +170,7 @@ export async function POST(req: Request) {
           success: false,
           message: "Pending signup not found or already reviewed.",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -201,16 +205,14 @@ export async function POST(req: Request) {
     console.error("deny-user error:", error);
 
     const message =
-      error instanceof Error
-        ? error.message
-        : "Unable to deny signup request.";
+      error instanceof Error ? error.message : "Unable to deny signup request.";
 
     return NextResponse.json(
       {
         success: false,
         message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

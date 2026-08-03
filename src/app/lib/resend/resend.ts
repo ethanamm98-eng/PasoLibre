@@ -13,7 +13,12 @@ const getResend = () => {
 };
 
 const getAppUrl = () => {
-  return process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  return (
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.NEXT_PUBLIC_DEV_SITE_URL ||
+    "http://localhost:3000"
+  );
 };
 
 export const sendAdminNotification = async (data: {
