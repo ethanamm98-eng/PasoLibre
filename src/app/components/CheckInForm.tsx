@@ -983,31 +983,31 @@ export default function CheckInForm({
 
                 <span className="relative">
                   {confirmed ? (
-                    <CheckCircle2 size={20} />
+                    <CheckCircle2 size={16} />
                   ) : (
-                    <CalendarCheck2 size={20} />
+                    <CalendarCheck2 size={16} />
                   )}
                 </span>
               </div>
             </div>
 
             <div className="min-w-0">
-              <div className="mb-2 flex flex-wrap items-center gap-2">
+              <div className="mb-1 flex flex-wrap items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#5BCEFA] shadow-[0_0_14px_rgba(91,206,250,0.95)]" />
 
-                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-blue-50/95">
+                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-blue-50/95 mb-0">
                   {language === "en"
                     ? "Event invitation"
                     : "Invitación al evento"}
                 </p>
               </div>
 
-              <h2 className="text-2xl font-black tracking-[-0.04em] text-white drop-shadow-[0_8px_28px_rgba(2,18,58,0.30)] sm:text-3xl">
+              <h2 className="text-xl md:text-2xl font-black tracking-wide text-white drop-shadow-[0_8px_28px_rgba(2,18,58,0.30)]">
                 {confirmed ? t.cardTitleConfirmed : t.cardTitleDefault}
               </h2>
 
               {!confirmed && (
-                <p className="mt-2 max-w-xl text-sm font-medium leading-6 text-blue-50/90">
+                <p className="mt-2 max-w-xl text-sm font-medium leading-5 text-blue-50/90">
                   {t.cardTextDefault}
                 </p>
               )}
@@ -1105,6 +1105,15 @@ export default function CheckInForm({
                 <span className="relative">{t.shareEvent}</span>
               </button>
             </div>
+            {confirmed && (
+              <Link
+                href="/events"
+                className="mt-2 group relative inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl border border-white/20 bg-linear-to-r from-emerald-600 via-green-600 to-teal-700 px-5 py-4 text-sm font-bold text-white shadow-[0_18px_42px_rgba(5,150,105,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_55px_rgba(5,150,105,0.38)]"
+              >
+                <CalendarDays size={17} />
+                {t.viewCalendar}
+              </Link>
+            )}
           </section>
 
           {/* ATTENDANCE WORKFLOW */}
@@ -1117,8 +1126,8 @@ export default function CheckInForm({
 
               <div className="relative">
                 <div className="mb-5 flex items-start gap-3.5">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-blue-100 bg-blue-50 text-[#0d4db0] shadow-sm">
-                    <UserCheck size={19} />
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl border border-blue-100 bg-blue-50 text-[#0d4db0] shadow-sm">
+                    <UserCheck size={16} />
                   </div>
 
                   <div className="min-w-0">
@@ -1131,7 +1140,7 @@ export default function CheckInForm({
                     >
                       {t.attendanceSectionTitle}
                     </h3>
-                    <p className="mt-1.5 text-sm leading-6 text-slate-500">
+                    <p className="mt-1.5 text-sm leading-5 text-slate-500">
                       {t.attendanceSectionDescription}
                     </p>
                   </div>
@@ -1144,14 +1153,14 @@ export default function CheckInForm({
                     </p>
                   ) : loggedInUserState ? (
                     <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 shadow-sm">
-                        <UserCheck size={20} />
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 shadow-sm">
+                        <UserCheck size={16} />
                       </div>
                       <div>
                         <p className="text-sm font-bold text-slate-900">
                           {t.signedIn}
                         </p>
-                        <p className="mt-1 text-sm leading-6 text-slate-500">
+                        <p className="mt-1 text-sm leading-5 text-slate-500">
                           {t.autoFilled}
                           {autoFilledName
                             ? ` ${isSpanish ? "para" : "for"} ${autoFilledName}`
@@ -1161,24 +1170,13 @@ export default function CheckInForm({
                       </div>
                     </div>
                   ) : (
-                    <div className="flex flex-col gap-4">
-                      <div>
-                        <p className="text-sm font-bold text-slate-900">
-                          {t.continueGuestOrSignIn}
-                        </p>
-                        <p className="mt-1 text-sm leading-6 text-slate-500">
-                          {t.guestText}
-                        </p>
-                      </div>
-
-                      <Link
-                        href={`/login?redirect=${encodeURIComponent(`/check-in/${event?.id}?occurrenceDate=${resolvedOccurrenceDate}`)}`}
-                        className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-blue-200 bg-white px-4 py-3.5 text-sm font-bold text-blue-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-50 hover:shadow-md"
-                      >
-                        <LogIn size={16} />
-                        <span>{t.signIn}</span>
-                      </Link>
-                    </div>
+                    <Link
+                      href={`/login?redirect=${encodeURIComponent(`/check-in/${event?.id}?occurrenceDate=${resolvedOccurrenceDate}`)}`}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-blue-200 bg-white px-4 py-3.5 text-sm font-bold text-blue-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-50 hover:shadow-md"
+                    >
+                      <LogIn size={16} />
+                      <span>{t.signIn}</span>
+                    </Link>
                   )}
                 </div>
 
@@ -1255,32 +1253,6 @@ export default function CheckInForm({
                   </span>
                 </button>
               </div>
-            </section>
-          )}
-
-          {confirmed && (
-            <section className="rounded-[1.75rem] border border-emerald-100 bg-linear-to-br from-emerald-50 via-white to-teal-50/70 p-4 shadow-[0_14px_36px_rgba(5,150,105,0.10)] sm:p-5">
-              <div className="mb-4 flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
-                  <CheckCircle2 size={20} />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-slate-900">
-                    {t.cardTitleConfirmed}
-                  </p>
-                  <p className="mt-1 text-sm leading-6 text-slate-500">
-                    {t.cardTextConfirmed}
-                  </p>
-                </div>
-              </div>
-
-              <Link
-                href="/events"
-                className="group relative inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl border border-white/20 bg-linear-to-r from-emerald-600 via-green-600 to-teal-700 px-5 py-4 text-sm font-bold text-white shadow-[0_18px_42px_rgba(5,150,105,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_24px_55px_rgba(5,150,105,0.38)]"
-              >
-                <CalendarDays size={17} />
-                {t.viewCalendar}
-              </Link>
             </section>
           )}
         </div>
