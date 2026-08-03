@@ -51,7 +51,7 @@ const normalizeDirtyCheckValue = (value: unknown): unknown => {
       .sort()
       .reduce<Record<string, unknown>>((acc, key) => {
         acc[key] = normalizeDirtyCheckValue(
-          (value as Record<string, unknown>)[key]
+          (value as Record<string, unknown>)[key],
         );
         return acc;
       }, {});
@@ -74,7 +74,7 @@ const getDirtySnapshot = ({
       schedulerForm,
       selectedInvitees,
       imageFile,
-    })
+    }),
   );
 
 const normalizeExcludedDate = (value?: string | null) => {
@@ -304,7 +304,7 @@ const EventSchedulerModal = ({
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(
-    schedulerForm?.imageUrl || null
+    schedulerForm?.imageUrl || null,
   );
 
   const [step, setStep] = useState(1);
@@ -341,7 +341,7 @@ const EventSchedulerModal = ({
       { id: 4, label: t.location },
       { id: 5, label: t.access },
     ],
-    [t.options, t.details, t.schedule, t.location, t.access]
+    [t.options, t.details, t.schedule, t.location, t.access],
   );
 
   const progress = Math.round((step / steps.length) * 100);
@@ -407,7 +407,7 @@ const EventSchedulerModal = ({
         const { data, error } = await supabase
           .from("profiles")
           .select(
-            "id, first_name, last_name, email, phone, is_approved, account_status, language_preference"
+            "id, first_name, last_name, email, phone, is_approved, account_status, language_preference",
           )
           .eq("is_approved", true)
           .eq("account_status", "active")
@@ -605,7 +605,7 @@ const EventSchedulerModal = ({
 
       if (recurrence === "weekly") {
         const selectedDays = getWeekdayIndexesFromCsv(
-          schedulerForm?.daysOfWeekCsv
+          schedulerForm?.daysOfWeekCsv,
         );
 
         if (!selectedDays.length) {
@@ -733,7 +733,7 @@ const EventSchedulerModal = ({
     if (occurrenceSheetsError) {
       console.warn(
         "Skipping occurrence attendance sheet delete. Make sure attendance_sheets.occurrence_date exists if you need per-date sheets.",
-        occurrenceSheetsError
+        occurrenceSheetsError,
       );
     }
   };
@@ -793,13 +793,13 @@ const EventSchedulerModal = ({
       setButtonLoading("cancel-occurrence");
 
       const currentExcludedDates = Array.isArray(
-        schedulerForm?.recurrence_excluded_dates
+        schedulerForm?.recurrence_excluded_dates,
       )
         ? (schedulerForm.recurrence_excluded_dates as string[])
         : [];
 
       const nextExcludedDates = Array.from(
-        new Set([...currentExcludedDates, selectedDate])
+        new Set([...currentExcludedDates, selectedDate]),
       ).sort();
 
       const { error: updateError } = await supabase
@@ -877,7 +877,7 @@ const EventSchedulerModal = ({
     if (!selectedInvitees.length) return;
 
     const recipients = profiles?.filter((p) =>
-      selectedInvitees?.includes(p.id)
+      selectedInvitees?.includes(p.id),
     );
 
     const validRecipients = recipients
@@ -891,7 +891,10 @@ const EventSchedulerModal = ({
 
     if (!validRecipients.length) return;
 
-    console.log("Preparing to send invitation emails to recipients:", validRecipients); 
+    console.log(
+      "Preparing to send invitation emails to recipients:",
+      validRecipients,
+    );
 
     const invitationPayload = {
       eventId: savedEvent.id,
@@ -924,7 +927,7 @@ const EventSchedulerModal = ({
         result?.error?.message ||
           result?.error ||
           result?.message ||
-          t.invitationEmailsError
+          t.invitationEmailsError,
       );
     }
   };
@@ -1082,6 +1085,8 @@ const EventSchedulerModal = ({
 
       let savedEvent = null;
 
+      console.log("Saving event with payload:", payload);
+
       if (isEdit && schedulerForm?.id) {
         const { data, error } = await supabase
           .from("events")
@@ -1099,26 +1104,27 @@ const EventSchedulerModal = ({
           .select("id, name_en, name_es")
           .single();
 
+        console.log("Insert event response:", { data, error });
         if (error) throw error;
         savedEvent = data;
       }
 
       await sendInvitationEmails(savedEvent);
 
-      // await showScopedSwal({
-      //   icon: "success",
-      //   title: isEdit ? t.eventUpdatedTitle : t.eventScheduledTitle,
-      //   text: schedulerForm?.createAttendanceSheet
-      //     ? isEdit
-      //       ? t.eventSheetUpdated
-      //       : t.eventSheetCreated
-      //     : isEdit
-      //     ? t.eventUpdatedText
-      //     : t.eventScheduledText,
-      //   timer: 1800,
-      //   timerProgressBar: true,
-      //   showConfirmButton: false,
-      // });
+      await showScopedSwal({
+        icon: "success",
+        title: isEdit ? t.eventUpdatedTitle : t.eventScheduledTitle,
+        text: schedulerForm?.createAttendanceSheet
+          ? isEdit
+            ? t.eventSheetUpdated
+            : t.eventSheetCreated
+          : isEdit
+            ? t.eventUpdatedText
+            : t.eventScheduledText,
+        timer: 1800,
+        timerProgressBar: true,
+        showConfirmButton: false,
+      });
 
       // setReloadPageData((prev: boolean) => !prev);
       resetAndCloseModal();
@@ -1140,16 +1146,16 @@ const EventSchedulerModal = ({
       setTimeout(() => {
         loadEvents?.();
 
-        Swal.fire({
-          target: formRef?.current || undefined,
-          heightAuto: false,
-          icon: "success",
-          title: t.eventUpdatedTitle,
-          text: t.eventSheetUpdated,
-          timer: 2000,
-          timerProgressBar: true,
-          showConfirmButton: false,
-        });
+        // Swal.fire({
+        //   target: formRef?.current || undefined,
+        //   heightAuto: false,
+        //   icon: "success",
+        //   title: t.eventUpdatedTitle,
+        //   text: t.eventSheetUpdated,
+        //   timer: 2000,
+        //   timerProgressBar: true,
+        //   showConfirmButton: false,
+        // });
       }, 500);
     }
   };
@@ -1260,8 +1266,8 @@ const EventSchedulerModal = ({
                       isActive
                         ? "border-blue-600 bg-blue-600 text-white shadow-md"
                         : isCompleted
-                        ? "border-blue-200 bg-blue-50 text-blue-700"
-                        : "border-slate-200 bg-white text-slate-500 hover:border-blue-200 hover:bg-blue-50"
+                          ? "border-blue-200 bg-blue-50 text-blue-700"
+                          : "border-slate-200 bg-white text-slate-500 hover:border-blue-200 hover:bg-blue-50"
                     }`}
                   >
                     <div className="text-[10px] font-semibold">
@@ -1375,8 +1381,8 @@ const EventSchedulerModal = ({
                   ? t.updating
                   : t.scheduling
                 : isEdit
-                ? t.update
-                : t.scheduleEvent}
+                  ? t.update
+                  : t.scheduleEvent}
             </button>
           )}
         </div>
