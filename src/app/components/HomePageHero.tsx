@@ -16,48 +16,48 @@ export default function HeroSection() {
     <section className="relative text-white overflow-hidden min-h-[80vh] md:min-h-[99.7vh] bg-[#0d4db0]">
       {/* Background Video - Fixed View */}
       <motion.video
-  autoPlay
-  muted
-  loop
-  playsInline
-  className="absolute md:top-0 top-28 left-0 w-full h-full my-auto md:h-full object-cover md:object-cover md:scale-105 z-0"
-  style={{
-    objectPosition: "60% 60%",
-  }}
-  animate={{
-    scale: 1.05,
-    objectPosition: [
-      "50% 40%", // sec 1
-      "50% 50%", // sec 2
-      "0% 50%",  // sec 3
-      "20% 50%",  // sec 4
-      "30% 50%", // sec 5
-      "55% 50%", // sec 6
-      "52% 50%", // sec 7
-      "50% 50%", // sec 8
-      "75% 60%", // sec 9
-      "60% 40%", // sec 10
-    ],
-  }}
-  transition={{
-    scale: {
-      duration: 10,
-      ease: "easeOut",
-    },
-    objectPosition: {
-      duration: 24,
-      repeat: Infinity,
-      repeatType: "mirror",
-      ease: "easeInOut",
-    },
-  }}
-  initial={{ scale: 1.15 }}
->
-  <source
-    src={hero?.backgroundMedia?.src || "/videos/park.mp4"}
-    type="video/mp4"
-  />
-</motion.video>
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="absolute md:top-0 top-28 left-0 w-full h-full my-auto md:h-full object-cover md:object-cover md:scale-105 z-0"
+        style={{
+          objectPosition: "60% 60%",
+        }}
+        animate={{
+          scale: 1.05,
+          objectPosition: [
+            "50% 40%", // sec 1
+            "50% 50%", // sec 2
+            "0% 50%", // sec 3
+            "20% 50%", // sec 4
+            "30% 50%", // sec 5
+            "55% 50%", // sec 6
+            "52% 50%", // sec 7
+            "50% 50%", // sec 8
+            "75% 60%", // sec 9
+            "60% 40%", // sec 10
+          ],
+        }}
+        transition={{
+          scale: {
+            duration: 10,
+            ease: "easeOut",
+          },
+          objectPosition: {
+            duration: 24,
+            repeat: Infinity,
+            repeatType: "mirror",
+            ease: "easeInOut",
+          },
+        }}
+        initial={{ scale: 1.15 }}
+      >
+        <source
+          src={hero?.backgroundMedia?.src || "/videos/park.mp4"}
+          type="video/mp4"
+        />
+      </motion.video>
 
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/60 z-10" />
