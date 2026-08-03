@@ -57,7 +57,7 @@ async function sendDeniedEmail({
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!supabaseUrl) throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL.");
 
-  const logoUrl = `${supabaseUrl}/storage/v1/object/public/email-assets/logo-title_nobg.png`;
+  const logoUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/email-assets/logo-title.png`;
 
   const html = `
     <div style="margin:0;padding:0;background-color:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">

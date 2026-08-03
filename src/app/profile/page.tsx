@@ -308,7 +308,7 @@ export default function ProfilePage() {
     editProfile: isSpanish ? "Editar Perfil" : "Edit Profile",
     attendance: isSpanish ? "Asistencia" : "Attendance",
     eventAttended: isSpanish ? "Evento asistido" : "Event attended",
-    eventsAttended: isSpanish ? "Eventos asistidos" : "Events attended",
+    eventsAttended: isSpanish ? "Eventos registrados" : "Events registered",
     memberSince: isSpanish ? "Miembro desde" : "Member since",
     profileCompletion: isSpanish ? "Perfil Completado" : "Profile Completion",
     profileCompletionText: isSpanish
@@ -334,11 +334,11 @@ export default function ProfilePage() {
     contact: isSpanish ? "Contacto" : "Contact",
     location: isSpanish ? "Ubicación" : "Location",
     walkingClubAttendance: isSpanish
-      ? "Historial de Asistencia"
-      : "Attendance History",
+      ? "Historial de Registro y Asistencia"
+      : "Registration and Attendance History",
     participationHistory: isSpanish
-      ? "Tus eventos asistidos"
-      : "Events you’ve attended",
+      ? "Tus eventos"
+      : "Your events",
     loadingAttendance: isSpanish
       ? "Cargando asistencia..."
       : "Loading attendance...",

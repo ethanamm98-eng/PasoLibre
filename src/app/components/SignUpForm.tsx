@@ -436,7 +436,7 @@ export default function SignUpForm() {
       </AnimatePresence>
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 relative top-3">
           <Field
             id="first-name"
             name="firstName"
