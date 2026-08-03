@@ -261,17 +261,24 @@ export default function CheckInForm({
     trackViewUrl?: string;
   } | null>(null);
 
+  const resolvedOccurrenceDate =
+    event?.occurrenceDate ||
+    event?.date ||
+    "";
+
   const [checkInUrl, setCheckInUrl] = useState(
-    `/check-in/${event.id}?occurrenceDate=${event.date}`,
+    `/check-in/${event.id}?occurrenceDate=${resolvedOccurrenceDate}`,
   );
 
   const effectiveAttendanceSheetId =
     resolvedAttendanceSheet?.id || attendanceSheetId || null;
 
-  const attendanceAvailable = !!effectiveAttendanceSheetId;
+  // const attendanceAvailable = !!effectiveAttendanceSheetId;
 
   const attendanceActive =
-    attendanceAvailable && (resolvedAttendanceSheet?.is_active ?? true);
+    !sheetLoading &&
+    // attendanceAvailable &&
+    (resolvedAttendanceSheet?.is_active ?? true);
 
   useEffect(() => {
     if (!qrOpen) return;
@@ -290,10 +297,17 @@ export default function CheckInForm({
   }, [qrOpen]);
 
   useEffect(() => {
+    const occurrenceDate =
+      event?.occurrenceDate ||
+      event?.date ||
+      "";
+
     setCheckInUrl(
-      `${window.location.origin}/check-in/${event.id}?occurrenceDate=${event.date}`,
+      `${window.location.origin}/check-in/${event.id}?occurrenceDate=${encodeURIComponent(
+        occurrenceDate,
+      )}`,
     );
-  }, [event.id, event.date]);
+  }, [event.id, event.occurrenceDate, event.date]);
 
   const getSelectedMusicText = () => {
     if (!selectedMusic) return "";
@@ -556,7 +570,7 @@ export default function CheckInForm({
         //   email: formData.email || invitedEmail || "",
         // });
 
-        const occurrenceDate = event?.occurrenceDate || event?.date || "";
+        const occurrenceDate = resolvedOccurrenceDate;
 
         const params = new URLSearchParams({
           eventId: event?.id,
@@ -611,7 +625,13 @@ export default function CheckInForm({
       mounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [event.id, invitedMemberId, invitedEmail, loggedInUserState]);
+  }, [
+    event.id,
+    resolvedOccurrenceDate,
+    invitedMemberId,
+    invitedEmail,
+    loggedInUserState,
+  ]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -624,9 +644,22 @@ export default function CheckInForm({
 
   const handleConfirmAttendance = async () => {
     // Prevent attendance confirmation for past events
-    const occurrenceDate = event?.occurrenceDate || event?.date;
+    const occurrenceDate = resolvedOccurrenceDate;
 
     const eventTime = event?.time || "23:59";
+
+    if (!occurrenceDate) {
+      Swal.fire({
+        icon: "warning",
+        title: isSpanish ? "Fecha no disponible" : "Occurrence date unavailable",
+        text: isSpanish
+          ? "No se pudo determinar la fecha de esta ocurrencia."
+          : "The occurrence date could not be determined.",
+        confirmButtonColor: "#0d4db0",
+      });
+
+      return;
+    }
 
     if (occurrenceDate) {
       const eventDateTime = new Date(`${occurrenceDate}T${eventTime}`);
@@ -675,7 +708,7 @@ export default function CheckInForm({
         },
         body: JSON.stringify({
           eventId: event?.id,
-          occurrenceDate: event?.date,
+          occurrenceDate,
           attendanceSheetId: effectiveAttendanceSheetId,
           participantName: formData.name.trim(),
           participantEmail: formData.email.trim() || null,
@@ -702,7 +735,7 @@ export default function CheckInForm({
         eventId: event?.id,
         eventNameEn: event?.name_en,
         eventNameEs: event?.name_es,
-        eventDate: event?.occurrenceDate || event?.date,
+        eventDate: occurrenceDate,
         participantName: formData.name.trim(),
         participantEmail: formData.email.trim(),
         participantLanguagePreference:
@@ -1137,7 +1170,7 @@ export default function CheckInForm({
                       </div>
 
                       <Link
-                        href={`/login?redirect=/check-in/${event?.id}`}
+                        href={`/login?redirect=${encodeURIComponent(`/check-in/${event?.id}?occurrenceDate=${resolvedOccurrenceDate}`)}`}
                         className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-blue-200 bg-white px-4 py-3.5 text-sm font-bold text-blue-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-50 hover:shadow-md"
                       >
                         <LogIn size={16} />

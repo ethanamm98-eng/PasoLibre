@@ -15,6 +15,7 @@ import { useLanguage } from "../context/language";
 import { ParticipantAvatar } from "./elements/AttendanceReport";
 import { AttendanceRecord } from "../lib/interfaces/attendance-report";
 import { SchedulerForm } from "../lib/interfaces/events";
+import { SlLocationPin } from "react-icons/sl";
 
 const translations = {
   en: {
@@ -39,6 +40,9 @@ const translations = {
     deleteConfirmTitle: "Delete attendance record?",
     deleteConfirmText: "This action cannot be undone.",
     deleteConfirmButton: "Delete",
+    time: "Time",
+    schedule: "Schedule",
+    eventType: "Type",
   },
   es: {
     loadingAttendanceData: "Cargando datos de asistencia...",
@@ -63,6 +67,9 @@ const translations = {
     deleteConfirmTitle: "¿Eliminar registro de asistencia?",
     deleteConfirmText: "Esta acción no se puede deshacer.",
     deleteConfirmButton: "Eliminar",
+    time: "Hora",
+    schedule: "Horario",
+    eventType: "Tipo",
   },
 };
 
@@ -99,6 +106,102 @@ const AttendanceReportTable = ({
 }) => {
   const { language } = useLanguage();
   const t = translations[language === "es" ? "es" : "en"];
+  const isSpanish = language === "es";
+
+  const parseLocalDate = (value?: string | null) => {
+    if (!value) return null;
+
+    const datePart = String(value).trim().split("T")[0];
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(datePart);
+
+    if (!match) return null;
+
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const parsedDate = new Date(year, month - 1, day);
+
+    if (
+      parsedDate.getFullYear() !== year ||
+      parsedDate.getMonth() !== month - 1 ||
+      parsedDate.getDate() !== day
+    ) {
+      return null;
+    }
+
+    return parsedDate;
+  };
+
+  const formatRecordDate = (value?: string | null) => {
+    const parsedDate = parseLocalDate(value);
+
+    if (!parsedDate) return value || "—";
+
+    return new Intl.DateTimeFormat(isSpanish ? "es-PR" : "en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }).format(parsedDate);
+  };
+
+  const formatTimeToAmPm = (value?: string | null) => {
+    if (!value) return "";
+
+    const match = /^(\d{1,2}):(\d{2})(?::(\d{2}))?/.exec(
+      String(value).trim(),
+    );
+
+    if (!match) return value;
+
+    const hours = Number(match[1]);
+    const minutes = Number(match[2]);
+
+    if (
+      !Number.isFinite(hours) ||
+      !Number.isFinite(minutes) ||
+      hours < 0 ||
+      hours > 23 ||
+      minutes < 0 ||
+      minutes > 59
+    ) {
+      return value;
+    }
+
+    const timeDate = new Date(2000, 0, 1, hours, minutes);
+
+    return new Intl.DateTimeFormat(isSpanish ? "es-PR" : "en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).format(timeDate);
+  };
+
+  const getLocalizedEventName = (event?: SchedulerForm) =>
+    isSpanish
+      ? event?.name_es || event?.name_en || t.unknownEvent
+      : event?.name_en || event?.name_es || t.unknownEvent;
+
+  const getLocalizedEventDescription = (event?: SchedulerForm) =>
+    isSpanish
+      ? event?.description_es || event?.description_en || ""
+      : event?.description_en || event?.description_es || "";
+
+  const getEventLocation = (event?: SchedulerForm) =>
+    [event?.streetAddress, event?.city, event?.country]
+      .filter(Boolean)
+      .join(", ");
+
+  const getEventScheduleLabel = (event?: SchedulerForm) => {
+    if (!event) return "—";
+
+    const schedule = formatEventSchedule(
+      event?.date || null,
+      event?.time || null,
+    );
+
+    return schedule || "—";
+  };
 
   const recordsScopeKey = useMemo(
     () =>
@@ -257,20 +360,41 @@ const AttendanceReportTable = ({
                               {t.event}
                             </p>
                             <p className="mt-1 text-sm font-semibold text-slate-800">
-                              {language === "es"
-                                ? event?.name_es ||
-                                  event?.name_en ||
-                                  t.unknownEvent
-                                : event?.name_en ||
-                                  event?.name_es ||
-                                  t.unknownEvent}
+                              {getLocalizedEventName(event)}
                             </p>
-                            <p className="mt-0.5 text-xs text-slate-400">
-                              {formatEventSchedule(
-                                event?.date || null,
-                                event?.time || null,
+
+                            {getLocalizedEventDescription(event) && (
+                              <p className="mt-1 line-clamp-2 text-xs leading-5 text-slate-500">
+                                {getLocalizedEventDescription(event)}
+                              </p>
+                            )}
+
+                            <div className="mt-2 space-y-1 text-xs text-slate-500">
+                              <p>
+                                <span className="font-semibold text-slate-600">
+                                  {t.schedule}:
+                                </span>{" "}
+                                {getEventScheduleLabel(event)}
+                              </p>
+
+                              {event?.type && (
+                                <p>
+                                  <span className="font-semibold text-slate-600">
+                                    {t.eventType}:
+                                  </span>{" "}
+                                  {event.type}
+                                </p>
                               )}
-                            </p>
+
+                              {getEventLocation(event) && (
+                                <p>
+                                  <span className="font-semibold text-slate-600">
+                                    {t.location}:
+                                  </span>{" "}
+                                  {getEventLocation(event)}
+                                </p>
+                              )}
+                            </div>
                           </div>
 
                           <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-3">
@@ -278,8 +402,14 @@ const AttendanceReportTable = ({
                               {t.date}
                             </p>
                             <p className="mt-1 text-sm font-semibold text-slate-800">
-                              {record.date}
+                              {formatRecordDate(record.date)}
                             </p>
+
+                            {record.time && (
+                              <p className="mt-1 text-xs font-medium text-slate-500">
+                                {t.time}: {formatTimeToAmPm(record.time)}
+                              </p>
+                            )}
                             {/* <div className="mt-2">
                               <StatusBadge
                                 status={record.status}
@@ -398,22 +528,54 @@ const AttendanceReportTable = ({
 
                       <td className="px-6 py-5">
                         <p className="font-medium text-slate-900">
-                          {language === "es"
-                            ? event?.name_es || event?.name_en || t.unknownEvent
-                            : event?.name_en ||
-                              event?.name_es ||
-                              t.unknownEvent}
+                          {getLocalizedEventName(event)}
                         </p>
-                        <p className="mt-0.5 text-xs text-slate-400">
-                          {formatEventSchedule(
-                            event?.date || null,
-                            event?.time || null,
+
+                        {getLocalizedEventDescription(event) && (
+                          <p className="mt-1 line-clamp-2 max-w-md text-xs leading-5 text-slate-500">
+                            {getLocalizedEventDescription(event)}
+                          </p>
+                        )}
+
+                        <div className="mt-2 flex max-w-lg flex-wrap gap-x-3 gap-y-1 text-xs text-slate-400">
+                          {/* <span>
+                            <span className="font-semibold text-slate-500">
+                              {t.schedule}:
+                            </span>{" "}
+                            {getEventScheduleLabel(event)}
+                          </span> */}
+
+                          {event?.type && (
+                            <span>
+                              <span className="font-semibold text-slate-500">
+                                {t.eventType}:
+                              </span>{" "}
+                              {event.type}
+                            </span>
                           )}
-                        </p>
+
+                          {getEventLocation(event) && (
+                            <span>
+                              <span className="font-semibold text-slate-500">
+                                {/* {t.location}: */}
+                                <SlLocationPin  size={12} className="inline-block mb-1" />
+                              </span>{" "}
+                              {getEventLocation(event)}
+                            </span>
+                          )}
+                        </div>
                       </td>
 
-                      <td className="px-6 py-5 font-medium text-slate-700">
-                        {record.date}
+                      <td className="px-6 py-5">
+                        <p className="font-medium text-slate-700">
+                          {formatRecordDate(record.date)}
+                        </p>
+
+                        {record.time && (
+                          <p className="mt-1 text-xs font-medium text-slate-500">
+                            {formatTimeToAmPm(record.time)}
+                          </p>
+                        )}
                       </td>
 
                       <td className="px-6 py-5">

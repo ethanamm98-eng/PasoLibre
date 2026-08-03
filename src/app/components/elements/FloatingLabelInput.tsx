@@ -76,9 +76,8 @@ const FloatingLabelInput = ({
           w-full
           rounded-xl
           border
-          px-4
+          px-3
           py-3
-          pr-11
           text-[15px]
           font-medium
           text-slate-800
@@ -107,24 +106,23 @@ const FloatingLabelInput = ({
 
       <label
         htmlFor={id}
-        className={`truncate
-          pointer-events-none
-          absolute
-          left-3
-          origin-left
-          rounded-full
-          bg-white
-          px-2
-          font-semibold
-          transition-all
-          duration-200
+        className={`pointer-events-none
+    absolute
+    left-3
+    ${!floating && isPasswordType ? "right-12" : "right-3"}
+    origin-left
+    transition-all
+    duration-200
+    whitespace-nowrap
+    overflow-hidden
+    text-ellipsis
 
-          ${
-            floating
-              ? "-top-2 text-[11px] text-[#0d4db0] shadow-sm"
-              : "top-3.5 px-1 text-sm font-medium text-slate-500 overflow-x-hidden"
-          }
-        `}
+    ${
+      floating
+        ? "-top-2 left-2 right-auto rounded-full bg-white px-2 text-[11px] font-semibold text-[#0d4db0] shadow-sm"
+        : "top-3.5 px-0 text-sm font-medium text-slate-500"
+    }
+  `}
       >
         {label}
       </label>
@@ -134,7 +132,7 @@ const FloatingLabelInput = ({
           type="button"
           onClick={() => setShowPassword((prev) => !prev)}
           tabIndex={-1}
-          className="
+          className="cursor-pointer
             absolute
             right-3
             top-1/2

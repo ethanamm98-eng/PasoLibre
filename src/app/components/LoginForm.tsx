@@ -402,7 +402,7 @@ export default function LoginForm() {
               </AnimatePresence>
             </div>
 
-            <div className="flex items-center justify-center gap-1 pt-1 text-center">
+            <div className="flex flex-wrap items-center justify-center gap-1 pt-1 text-center">
               <p className="text-sm text-slate-500">{t.forgot}</p>
               <button
                 type="button"

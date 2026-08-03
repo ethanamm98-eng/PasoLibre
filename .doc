@@ -14,10 +14,11 @@ Bugs found testing so far
 [X] Verify language preference in different accounts
 [X] Fix the hearts in About Page
 [X] Send Event Invitation when confirming from the Calendar
-[X] ] Fix discard bug in message scheduler
+[X] Fix discard bug in message scheduler
 [X] Fix event click  to confirm attendance
 [X] Add conf Swal after adding initiative
 [X] Enhance initiatives to include occurrence data and formatted time
-[] Completely translate the profile
+[X] Completely translate the profile
+[X] Fix handleCalendarClick
 
 

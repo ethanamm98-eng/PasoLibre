@@ -28,11 +28,11 @@ const getDefaultDateTime = () => {
 
   const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
     2,
-    "0"
+    "0",
   )}-${String(now.getDate()).padStart(2, "0")}`;
 
   const time = `${String(now.getHours()).padStart(2, "0")}:${String(
-    now.getMinutes()
+    now.getMinutes(),
   ).padStart(2, "0")}`;
 
   return { date, time };
@@ -93,7 +93,7 @@ const Page = () => {
   const [accessMessage, setAccessMessage] = useState("");
 
   const [calendarMode, setCalendarMode] = useState<"admin" | "member">(
-    "member"
+    "member",
   );
   const [showForm, setShowForm] = useState(false);
   const [createdBy, setCreatedBy] = useState("");
@@ -104,7 +104,7 @@ const Page = () => {
   >(null);
 
   const [schedulerForm, setSchedulerForm] = useState<SchedulerForm>(
-    buildEmptySchedulerForm()
+    buildEmptySchedulerForm(),
   );
 
   const [eventsLoading, setEventsLoading] = useState(true);
@@ -114,10 +114,10 @@ const Page = () => {
   const [isEdit, setIsEdit] = useState(false);
 
   const [attendanceAnchor, setAttendanceAnchor] = useState<DOMRect | null>(
-    null
+    null,
   );
   const [attendanceEvent, setAttendanceEvent] = useState<SchedulerForm | null>(
-    null
+    null,
   );
 
   const [calendarThemeKey, setCalendarThemeKey] =
@@ -157,7 +157,7 @@ const Page = () => {
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select(
-            "first_name, last_name, role, is_approved, account_status, language_preference"
+            "first_name, last_name, role, is_approved, account_status, language_preference",
           )
           .eq("id", user.id)
           .maybeSingle<ProfileRecord>();
@@ -165,7 +165,7 @@ const Page = () => {
         if (profileError || !profile) {
           setAccessDenied(true);
           setAccessMessage(
-            "We could not verify your account profile for events access."
+            "We could not verify your account profile for events access.",
           );
           return;
         }
@@ -173,7 +173,7 @@ const Page = () => {
         if (!profile.is_approved) {
           setAccessDenied(true);
           setAccessMessage(
-            "Your account is pending approval. You will be able to access events once approved."
+            "Your account is pending approval. You will be able to access events once approved.",
           );
           return;
         }
@@ -181,7 +181,7 @@ const Page = () => {
         if (profile.account_status === "suspended") {
           setAccessDenied(true);
           setAccessMessage(
-            "Your account has been suspended. Please contact an administrator."
+            "Your account has been suspended. Please contact an administrator.",
           );
           return;
         }
@@ -222,7 +222,7 @@ const Page = () => {
 
     return `${hours.padStart(2, "0")}:${minutes.padStart(
       2,
-      "0"
+      "0",
     )}:${seconds.padStart(2, "0")}`;
   };
 
@@ -349,7 +349,7 @@ const Page = () => {
           audio_artwork_url,
           audio_preview_url,
           audio_track_view_url
-        `
+        `,
         )
         .order("date", { ascending: true, nullsFirst: false })
         .order("time", { ascending: true, nullsFirst: false })
@@ -367,7 +367,7 @@ const Page = () => {
   };
 
   const normalizeEventToForm = (
-    event: Partial<SchedulerForm>
+    event: Partial<SchedulerForm>,
   ): SchedulerForm => ({
     id: event?.id || "",
     imageUrl: event?.imageUrl || "",
@@ -422,103 +422,479 @@ const Page = () => {
     createdAt: event?.createdAt || "",
   });
 
+  const normalizeScheduleValue = (value?: string | null) =>
+    String(value || "")
+      .trim()
+      .toLowerCase()
+      .replaceAll("_", "-")
+      .replaceAll(" ", "-");
+
+  const parseCsvValues = (value?: string | null) =>
+    String(value || "")
+      .split(",")
+      .map((item) => normalizeScheduleValue(item))
+      .filter(Boolean);
+
+  const startOfLocalDay = (date: Date) =>
+    new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+  const addLocalDays = (date: Date, amount: number) =>
+    new Date(date.getFullYear(), date.getMonth(), date.getDate() + amount);
+
+  const toDateKey = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
+  const parseDateOnly = (value?: string | Date | null): Date | null => {
+    if (!value) return null;
+
+    if (value instanceof Date) {
+      if (Number.isNaN(value.getTime())) return null;
+      return startOfLocalDay(value);
+    }
+
+    const datePart = String(value).trim().split("T")[0];
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(datePart);
+
+    if (!match) return null;
+
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+
+    const parsedDate = new Date(year, month - 1, day);
+
+    if (
+      parsedDate.getFullYear() !== year ||
+      parsedDate.getMonth() !== month - 1 ||
+      parsedDate.getDate() !== day
+    ) {
+      return null;
+    }
+
+    return parsedDate;
+  };
+
+  const parseEventTime = (value?: string | null) => {
+    const match = /^(\d{1,2}):(\d{2})(?::(\d{2}))?/.exec(
+      String(value || "00:00:00").trim(),
+    );
+
+    if (!match) {
+      return {
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+      };
+    }
+
+    const hours = Number(match[1]);
+    const minutes = Number(match[2]);
+    const seconds = Number(match[3] || 0);
+
+    return {
+      hours: Number.isFinite(hours) && hours >= 0 && hours <= 23 ? hours : 0,
+      minutes:
+        Number.isFinite(minutes) && minutes >= 0 && minutes <= 59 ? minutes : 0,
+      seconds:
+        Number.isFinite(seconds) && seconds >= 0 && seconds <= 59 ? seconds : 0,
+    };
+  };
+
+  const combineDateAndTime = (date: Date, time?: string | null) => {
+    const { hours, minutes, seconds } = parseEventTime(time);
+
+    return new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      hours,
+      minutes,
+      seconds,
+      0,
+    );
+  };
+
+  const getExcludedDateKeys = (event: SchedulerForm) =>
+    new Set(
+      (Array.isArray(event.recurrence_excluded_dates)
+        ? event.recurrence_excluded_dates
+        : []
+      )
+        .map((value) => parseDateOnly(String(value)))
+        .filter((value): value is Date => value !== null)
+        .map(toDateKey),
+    );
+
+  const weekdayAliases: Record<number, string[]> = {
+    0: ["sun", "sunday", "domingo", "dom", "0", "7"],
+    1: ["mon", "monday", "lunes", "lun", "1"],
+    2: ["tue", "tues", "tuesday", "martes", "mar", "2"],
+    3: ["wed", "wednesday", "miércoles", "miercoles", "mié", "mie", "3"],
+    4: ["thu", "thur", "thurs", "thursday", "jueves", "jue", "4"],
+    5: ["fri", "friday", "viernes", "vie", "5"],
+    6: ["sat", "saturday", "sábado", "sabado", "sáb", "sab", "6"],
+  };
+
+  const monthAliases: Record<number, string[]> = {
+    1: ["1", "01", "jan", "january", "ene", "enero"],
+    2: ["2", "02", "feb", "february", "febrero"],
+    3: ["3", "03", "mar", "march", "marzo"],
+    4: ["4", "04", "apr", "april", "abr", "abril"],
+    5: ["5", "05", "may", "mayo"],
+    6: ["6", "06", "jun", "june", "junio"],
+    7: ["7", "07", "jul", "july", "julio"],
+    8: ["8", "08", "aug", "august", "ago", "agosto"],
+    9: ["9", "09", "sep", "sept", "september", "septiembre"],
+    10: ["10", "oct", "october", "octubre"],
+    11: ["11", "nov", "november", "noviembre"],
+    12: ["12", "dec", "december", "dic", "diciembre"],
+  };
+
+  const matchesRecurringDate = (event: SchedulerForm, candidate: Date) => {
+    const recurrence = normalizeScheduleValue(event.recurrence);
+    const selectedDays = parseCsvValues(event.daysOfWeekCsv);
+    const selectedMonths = parseCsvValues(event.monthsCsv);
+
+    const dayOfMonth = Number(event.dayOfMonth || 0);
+    const month = Number(event.month || 0);
+
+    if (recurrence === "daily" || recurrence === "day") {
+      return true;
+    }
+
+    if (recurrence === "weekly" || recurrence === "week") {
+      if (selectedDays.length === 0) {
+        return false;
+      }
+
+      const aliases = weekdayAliases[candidate.getDay()] || [];
+
+      return selectedDays.some((day) => aliases.includes(day));
+    }
+
+    if (recurrence === "monthly" || recurrence === "month") {
+      return dayOfMonth >= 1 && candidate.getDate() === dayOfMonth;
+    }
+
+    if (recurrence === "selectedmonth" || recurrence === "selected-month") {
+      if (dayOfMonth < 1 || candidate.getDate() !== dayOfMonth) {
+        return false;
+      }
+
+      const aliases = monthAliases[candidate.getMonth() + 1] || [];
+
+      return selectedMonths.some((selectedMonth) =>
+        aliases.includes(selectedMonth),
+      );
+    }
+
+    if (recurrence === "yearly" || recurrence === "year") {
+      if (dayOfMonth < 1 || candidate.getDate() !== dayOfMonth) {
+        return false;
+      }
+
+      if (month >= 1 && month <= 12) {
+        return candidate.getMonth() + 1 === month;
+      }
+
+      const aliases = monthAliases[candidate.getMonth() + 1] || [];
+
+      return selectedMonths.some((selectedMonth) =>
+        aliases.includes(selectedMonth),
+      );
+    }
+
+    return false;
+  };
+
+  const getNextOccurrenceDate = (event: SchedulerForm): string | null => {
+    const scheduleType = String(event.scheduleType || "").toLowerCase();
+
+    const recurrence = String(event.recurrence || "").toLowerCase();
+
+    const now = new Date();
+
+    const toDateKey = (date: Date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+
+      return `${year}-${month}-${day}`;
+    };
+
+    const parseTime = (value?: string | null) => {
+      const [hour = "0", minute = "0", second = "0"] = String(
+        value || "00:00:00",
+      ).split(":");
+
+      return {
+        hour: Number(hour) || 0,
+        minute: Number(minute) || 0,
+        second: Number(second) || 0,
+      };
+    };
+
+    const createDateTime = (date: Date) => {
+      const { hour, minute, second } = parseTime(event.time);
+
+      return new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+        hour,
+        minute,
+        second,
+        0,
+      );
+    };
+
+    const excludedDates = new Set(
+      (event.recurrence_excluded_dates || []).map((value) =>
+        String(value).substring(0, 10),
+      ),
+    );
+
+    if (scheduleType === "one-time") {
+      if (!event.date) return null;
+
+      return String(event.date).substring(0, 10);
+    }
+
+    if (scheduleType !== "recurrent") {
+      return null;
+    }
+
+    const selectedDays = String(event.daysOfWeekCsv || "")
+      .split(",")
+      .map((value) => value.trim().toLowerCase())
+      .filter(Boolean);
+
+    const selectedMonths = String(event.monthsCsv || "")
+      .split(",")
+      .map((value) => value.trim().toLowerCase())
+      .filter(Boolean);
+
+    const weekdayNames = [
+      ["sunday", "sun", "domingo", "dom"],
+      ["monday", "mon", "lunes", "lun"],
+      ["tuesday", "tue", "martes", "mar"],
+      ["wednesday", "wed", "miércoles", "miercoles", "mie"],
+      ["thursday", "thu", "jueves", "jue"],
+      ["friday", "fri", "viernes", "vie"],
+      ["saturday", "sat", "sábado", "sabado", "sab"],
+    ];
+
+    const monthNames = [
+      ["january", "jan", "enero", "ene", "1", "01"],
+      ["february", "feb", "febrero", "2", "02"],
+      ["march", "mar", "marzo", "3", "03"],
+      ["april", "apr", "abril", "abr", "4", "04"],
+      ["may", "mayo", "5", "05"],
+      ["june", "jun", "junio", "6", "06"],
+      ["july", "jul", "julio", "7", "07"],
+      ["august", "aug", "agosto", "ago", "8", "08"],
+      ["september", "sep", "septiembre", "9", "09"],
+      ["october", "oct", "octubre", "10"],
+      ["november", "nov", "noviembre", "11"],
+      ["december", "dec", "diciembre", "dic", "12"],
+    ];
+
+    const matchesDate = (candidate: Date) => {
+      if (recurrence === "daily") {
+        return true;
+      }
+
+      if (recurrence === "weekly") {
+        if (selectedDays.length === 0) {
+          return false;
+        }
+
+        const validNames = weekdayNames[candidate.getDay()];
+
+        return selectedDays.some((day) => validNames.includes(day));
+      }
+
+      if (recurrence === "monthly") {
+        const dayOfMonth = Number(event.dayOfMonth);
+
+        return dayOfMonth > 0 && candidate.getDate() === dayOfMonth;
+      }
+
+      if (recurrence === "yearly") {
+        const dayOfMonth = Number(event.dayOfMonth);
+
+        const configuredMonth = Number(event.month);
+
+        if (dayOfMonth <= 0 || candidate.getDate() !== dayOfMonth) {
+          return false;
+        }
+
+        if (configuredMonth >= 1 && configuredMonth <= 12) {
+          return candidate.getMonth() + 1 === configuredMonth;
+        }
+
+        const validMonths = monthNames[candidate.getMonth()];
+
+        return selectedMonths.some((month) => validMonths.includes(month));
+      }
+
+      return false;
+    };
+
+    let candidate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    for (let index = 0; index < 3660; index += 1) {
+      const dateKey = toDateKey(candidate);
+
+      const matchesRecurrence = matchesDate(candidate);
+
+      const hasNotPassed = createDateTime(candidate) >= now;
+
+      const isExcluded = excludedDates.has(dateKey);
+
+      if (matchesRecurrence && hasNotPassed && !isExcluded) {
+        return dateKey;
+      }
+
+      candidate = new Date(
+        candidate.getFullYear(),
+        candidate.getMonth(),
+        candidate.getDate() + 1,
+      );
+    }
+
+    return null;
+  };
+
+  const formatOccurrenceDate = (occurrenceDate: string) => {
+    const parsedDate = parseDateOnly(occurrenceDate);
+
+    if (!parsedDate) return occurrenceDate;
+
+    return new Intl.DateTimeFormat("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    }).format(parsedDate);
+  };
+
+  const escapeHtml = (value: unknown) =>
+    String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+
   const handleMemberAttendance = async (event: SchedulerForm) => {
-  if (!event?.id) return;
+    if (!event?.id) return;
 
-  const eventName = event.name_en || event.name_es || "this event";
+    const eventName = event.name_en || event.name_es || "this event";
 
-  const occurrenceDate =
-    event.occurrenceDate ||
-    event.date ||
-    (event.start ? String(event.start).split("T")[0] : "");
+    const occurrenceDate = getNextOccurrenceDate(event);
 
-  if (!occurrenceDate) {
-    await Swal.fire({
-      icon: "warning",
-      title: "Missing occurrence date",
-      text: "A valid occurrence date is required to confirm attendance.",
-      confirmButtonColor: "#0d4db0",
-    });
-
-    return;
-  }
-
-  try {
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError) throw authError;
-
-    if (!user) {
+    if (!occurrenceDate) {
       await Swal.fire({
         icon: "warning",
-        title: "Sign in required",
-        text: "Please sign in before confirming your attendance.",
+        title: "Missing occurrence date",
+        text:
+          normalizeScheduleValue(event.scheduleType) === "recurrent"
+            ? "The next occurrence could not be determined from the recurrence settings, event time, and excluded dates."
+            : "A valid future occurrence date is required to confirm attendance.",
         confirmButtonColor: "#0d4db0",
       });
 
       return;
     }
 
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("first_name, last_name, email, phone")
-      .eq("id", user.id)
-      .maybeSingle();
+    const formattedOccurrenceDate = formatOccurrenceDate(occurrenceDate);
 
-    if (profileError) throw profileError;
+    try {
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
 
-    const participantName =
-      [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") ||
-      user.email ||
-      "Attendee";
+      if (authError) throw authError;
 
-    const participantEmail = profile?.email || user.email || null;
-    const participantPhone = profile?.phone || null;
+      if (!user) {
+        await Swal.fire({
+          icon: "warning",
+          title: "Sign in required",
+          text: "Please sign in before confirming your attendance.",
+          confirmButtonColor: "#0d4db0",
+        });
 
-    /*
-     * Check whether this user already has an attendance record
-     * for this specific event occurrence.
-     */
-    const params = new URLSearchParams({
-      eventId: event.id,
-      occurrenceDate,
-      memberId: user.id,
-    });
+        return;
+      }
 
-    if (participantEmail) {
-      params.set("email", participantEmail);
-    }
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("first_name, last_name, email, phone")
+        .eq("id", user.id)
+        .maybeSingle();
 
-    const attendanceResponse = await fetch(
-      `/api/event-attendance?${params.toString()}`
-    );
+      if (profileError) throw profileError;
 
-    const attendanceResult = await attendanceResponse.json();
+      const participantName =
+        [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") ||
+        user.email ||
+        "Attendee";
 
-    if (!attendanceResponse.ok || !attendanceResult?.success) {
-      throw new Error(
-        attendanceResult?.message ||
-          "Unable to load your attendance information."
+      const participantEmail = profile?.email || user.email || null;
+      const participantPhone = profile?.phone || null;
+
+      /*
+       * Check whether this user already has an attendance record
+       * for this specific event occurrence.
+       */
+      const params = new URLSearchParams({
+        eventId: event.id,
+        occurrenceDate,
+        memberId: user.id,
+      });
+
+      if (participantEmail) {
+        params.set("email", participantEmail);
+      }
+
+      const attendanceResponse = await fetch(
+        `/api/event-attendance?${params.toString()}`,
       );
-    }
 
-    const existingEntry = attendanceResult?.existingEntry || null;
+      const attendanceResult = await attendanceResponse.json();
 
-    const hasConfirmed =
-      existingEntry?.status === "attended" ||
-      existingEntry?.checked_in === true;
+      if (!attendanceResponse.ok || !attendanceResult?.success) {
+        throw new Error(
+          attendanceResult?.message ||
+            "Unable to load your attendance information.",
+        );
+      }
 
-    const result = await Swal.fire({
-      icon: hasConfirmed ? "success" : "question",
+      const existingEntry = attendanceResult?.existingEntry || null;
 
-      title: hasConfirmed
-        ? "Attendance confirmed"
-        : "Confirm attendance",
+      const hasConfirmed =
+        existingEntry?.status === "attended" ||
+        existingEntry?.checked_in === true;
 
-      html: `
+      const checkInHref = `/check-in/${event?.id || ""}${
+        occurrenceDate
+          ? `?occurrenceDate=${encodeURIComponent(occurrenceDate)}`
+          : ""
+      }`;
+
+      const result = await Swal.fire({
+        icon: hasConfirmed ? "success" : "question",
+
+        title: hasConfirmed ? "Attendance confirmed" : "Confirm attendance",
+
+        html: `
         <div style="text-align:left">
           <div
             style="
@@ -537,7 +913,7 @@ const Page = () => {
                 margin-bottom:5px;
               "
             >
-              ${eventName}
+              ${escapeHtml(eventName)}
             </div>
 
             <div
@@ -562,8 +938,39 @@ const Page = () => {
                 font-weight:600;
               "
             >
-              Occurrence: ${occurrenceDate}
+              Occurrence: ${escapeHtml(formattedOccurrenceDate)}
             </div>
+
+            <a
+              href="${escapeHtml(checkInHref)}"
+              style="
+                display:inline-flex;
+                align-items:center;
+                justify-content:center;
+                width:100%;
+                margin-top:14px;
+                padding:11px 14px;
+                border:1px solid #bfdbfe;
+                border-radius:12px;
+                background:#eff6ff;
+                color:#0d4db0;
+                font-size:13px;
+                font-weight:700;
+                text-decoration:none;
+                transition:all .2s ease;
+                box-sizing:border-box;
+              "
+              onmouseover="
+                this.style.background='#dbeafe';
+                this.style.borderColor='#93c5fd';
+              "
+              onmouseout="
+                this.style.background='#eff6ff';
+                this.style.borderColor='#bfdbfe';
+              "
+            >
+              View invitation
+            </a>
           </div>
 
           <div
@@ -615,137 +1022,135 @@ const Page = () => {
         </div>
       `,
 
-      showCancelButton: true,
+        showCancelButton: true,
 
-      confirmButtonText: hasConfirmed
-        ? "Cancel attendance"
-        : "Yes, I’ll attend",
+        confirmButtonText: hasConfirmed
+          ? "Cancel attendance"
+          : "Yes, I’ll attend",
 
-      cancelButtonText: "Close",
+        cancelButtonText: "Close",
 
-      confirmButtonColor: hasConfirmed ? "#e11d48" : "#059669",
-      cancelButtonColor: "#64748b",
+        confirmButtonColor: hasConfirmed ? "#e11d48" : "#059669",
+        cancelButtonColor: "#64748b",
 
-      reverseButtons: true,
-      focusCancel: false,
-      showLoaderOnConfirm: true,
+        reverseButtons: true,
+        focusCancel: false,
+        showLoaderOnConfirm: true,
 
-      allowOutsideClick: () => !Swal.isLoading(),
-      allowEscapeKey: () => !Swal.isLoading(),
+        allowOutsideClick: () => !Swal.isLoading(),
+        allowEscapeKey: () => !Swal.isLoading(),
 
-      customClass: {
-        popup: "rounded-3xl",
-        confirmButton: "rounded-xl px-5 py-2.5",
-        cancelButton: "rounded-xl px-5 py-2.5",
-      },
+        customClass: {
+          popup: "rounded-3xl",
+          confirmButton: "rounded-xl px-5 py-2.5",
+          cancelButton: "rounded-xl px-5 py-2.5",
+        },
 
-      preConfirm: async () => {
-        try {
-          const response = await fetch("/api/event-attendance", {
-            method: hasConfirmed ? "DELETE" : "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(
-              hasConfirmed
-                ? {
-                    eventId: event.id,
-                    occurrenceDate,
-                    memberId: user.id,
-                    participantEmail,
-                  }
-                : {
-                    eventId: event.id,
-                    occurrenceDate,
-                    participantName,
-                    participantEmail,
-                    participantPhone,
-                    memberId: user.id,
-                    status: "attended",
-                  }
-            ),
-          });
+        preConfirm: async () => {
+          try {
+            const response = await fetch("/api/event-attendance", {
+              method: hasConfirmed ? "DELETE" : "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(
+                hasConfirmed
+                  ? {
+                      eventId: event.id,
+                      occurrenceDate,
+                      memberId: user.id,
+                      participantEmail,
+                    }
+                  : {
+                      eventId: event.id,
+                      occurrenceDate,
+                      participantName,
+                      participantEmail,
+                      participantPhone,
+                      memberId: user.id,
+                      status: "attended",
+                    },
+              ),
+            });
 
-          const responseResult = await response.json();
+            const responseResult = await response.json();
 
-          if (!response.ok || !responseResult?.success) {
-            throw new Error(
-              responseResult?.message ||
-                (hasConfirmed
-                  ? "Unable to cancel attendance."
-                  : "Unable to confirm attendance.")
+            if (!response.ok || !responseResult?.success) {
+              throw new Error(
+                responseResult?.message ||
+                  (hasConfirmed
+                    ? "Unable to cancel attendance."
+                    : "Unable to confirm attendance."),
+              );
+            }
+
+            return responseResult;
+          } catch (error) {
+            Swal.showValidationMessage(
+              error instanceof Error
+                ? error.message
+                : "Unable to update attendance.",
             );
+
+            return false;
           }
+        },
+      });
 
-          return responseResult;
-        } catch (error) {
-          Swal.showValidationMessage(
-            error instanceof Error
-              ? error.message
-              : "Unable to update attendance."
-          );
+      if (!result.isConfirmed) return;
 
-          return false;
-        }
-      },
-    });
+      await loadEvents();
 
-    if (!result.isConfirmed) return;
+      await Swal.fire({
+        icon: "success",
 
-    await loadEvents();
+        title: hasConfirmed ? "Attendance cancelled" : "Attendance confirmed",
 
-    await Swal.fire({
-      icon: "success",
+        text: hasConfirmed
+          ? `Your attendance for ${eventName} was cancelled.`
+          : `You are now attending ${eventName}.`,
 
-      title: hasConfirmed
-        ? "Attendance cancelled"
-        : "Attendance confirmed",
+        confirmButtonText: "Close",
+        confirmButtonColor: "#0d4db0",
 
-      text: hasConfirmed
-        ? `Your attendance for ${eventName} was cancelled.`
-        : `You are now attending ${eventName}.`,
+        customClass: {
+          popup: "rounded-3xl",
+          confirmButton: "rounded-xl px-5 py-2.5",
+        },
+      });
+    } catch (error) {
+      console.error("Attendance error:", error);
 
-      confirmButtonText: "Close",
-      confirmButtonColor: "#0d4db0",
+      await Swal.fire({
+        icon: "error",
+        title: "Unable to update attendance",
+        text:
+          error instanceof Error
+            ? error.message
+            : "Something went wrong while updating attendance.",
+        confirmButtonColor: "#dc2626",
+      });
+    }
+  };
 
-      customClass: {
-        popup: "rounded-3xl",
-        confirmButton: "rounded-xl px-5 py-2.5",
-      },
-    });
-  } catch (error) {
-    console.error("Attendance error:", error);
+  const handleCalendarClick = async ({
+    event,
+  }: {
+    clickEvent?: React.MouseEvent<Element, MouseEvent>;
+    event: SchedulerForm;
+  }) => {
+    if (calendarMode === "admin") {
+      setSchedulerForm(normalizeEventToForm(event));
+      setErrors({});
+      setIsEdit(true);
+      setShowForm(true);
+      return;
+    }
 
-    await Swal.fire({
-      icon: "error",
-      title: "Unable to update attendance",
-      text:
-        error instanceof Error
-          ? error.message
-          : "Something went wrong while updating attendance.",
-      confirmButtonColor: "#dc2626",
-    });
-  }
-};
-
- const handleCalendarClick = async ({
-  event,
-}: {
-  clickEvent?: React.MouseEvent<Element, MouseEvent>;
-  event: SchedulerForm;
-}) => {
-  if (calendarMode === "admin") {
-    setSchedulerForm(normalizeEventToForm(event));
-    setErrors({});
-    setIsEdit(true);
-    setShowForm(true);
-    return;
-  }
-
-  if (calendarMode === "member") {
-    await handleMemberAttendance(event);
-  }
-};
+    if (calendarMode === "member") {
+      await handleMemberAttendance(event);
+    }
+  };
 
   const resetComposeForm = () => {
     setSchedulerForm(buildEmptySchedulerForm());
