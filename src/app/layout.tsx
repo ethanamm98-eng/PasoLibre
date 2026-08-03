@@ -3,6 +3,8 @@ import { Geist_Mono, Chivo } from "next/font/google";
 
 import { LanguageProvider } from "./context/language";
 
+import "./globals.css";
+
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
